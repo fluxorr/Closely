@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Closely
 
-## Getting Started
+A real-time conversational experience for couples to deepen their connection through thoughtful prompts and interactive activities.
 
-First, run the development server:
+## 🌟 Core Features
+
+### 🃏 Card-Based Conversations
+- **Interactive Cards**: Flip through thought-provoking questions categorized into:
+  - Deep: Emotional and meaningful conversations
+  - Fun: Lighthearted and playful prompts
+  - Memory: Nostalgic and relationship-building moments
+  - Action: Direct, intimate activities
+  - Spicy: Intimate and sensual prompts
+  - Naughty: Explicit and teasing scenarios
+- **Dynamic Card Drawing**: Draw new cards to keep conversations fresh and engaging
+
+### 💬 Real-Time Chat
+- **Synchronized Messaging**: Communicate with your partner in real-time
+- **Message History**: See all conversation history within the room
+- **Name Persistence**: Remember your name across sessions
+
+### ❤️ Express Your Feelings
+- **Emotional Reactions**: React to conversations with 6 different emojis
+- **Visual Feedback**: See reactions floating across the screen in real-time
+
+### 🎮 Mini Games (Coming Soon)
+- **Tic Tac Toe**: Classic game with real-time updates
+- **Rock Paper Scissors**: Play against your partner
+- **Tug of War**: Competitive fun with visual feedback
+
+## 🚀 Quick Start
+
+1. Visit the app and click "Start Room Now"
+2. Enter your name to join a new room
+3. Share the room link with your partner
+4. Start drawing cards and connecting!
+
+## 🎨 Design Philosophy
+
+Closely features a bold, neo-brutalist design with:
+- High-contrast color scheme
+- Playful animations and interactions
+- Hand-drawn aesthetic elements
+- Responsive layout for all devices
+
+## 🔧 Technology Stack
+
+- Next.js 14 (App Router)
+- React 18
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Next.js App Router
+
+## 📱 Features
+
+- Real-time synchronization across devices
+- Local storage for persistent user data
+- Responsive design for mobile and desktop
+- No external dependencies beyond core React ecosystem
+- Mocked backend for demonstration purposes
+
+## 🛠️ Development
+
+This project uses Next.js with the App Router. To run locally:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📝 License
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

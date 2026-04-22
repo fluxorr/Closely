@@ -368,7 +368,7 @@ export default function Games() {
   return (
     <main className="flex min-h-screen flex-col md:flex-row p-6 bg-[#fffcf2] selection:bg-froly selection:text-white">
       {/* Sidebar Chat */}
-      <div className="w-full md:w-80 flex flex-col md:flex-col md:mr-6">
+      <div className="w-full md:w-96 flex flex-col md:flex-col md:mr-6 border-r-4 border-black">
         {/* Chat header */}
         <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
           <h2 className="text-2xl font-black uppercase">Room Chat</h2>
@@ -415,6 +415,21 @@ export default function Games() {
             Send
           </button>
         </form>
+      </div>
+
+      {/* Camera View */}
+      <div className="w-full md:w-80 flex flex-col ml-6 md:ml-0">
+        <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
+          <h2 className="text-2xl font-black uppercase">Camera View</h2>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-center p-4 border-4 border-black rounded-2xl bg-gray-200">
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="bg-gray-300 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
+              <span className="text-gray-500 font-bold">Camera Feed</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}

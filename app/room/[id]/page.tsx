@@ -108,7 +108,7 @@ export default function Room() {
   return (
     <main className="flex min-h-screen flex-col md:flex-row p-6 overflow-hidden relative selection:bg-froly selection:text-white">
       {/* Sidebar Chat */}
-      <div className="w-full md:w-80 flex flex-col md:flex-col md:mr-6">
+      <div className="w-full md:w-md flex flex-col md:flex-col md:mr-12 border-r-4 border-black">
         {/* Chat header */}
         <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
           <h2 className="text-2xl font-black uppercase">Room Chat</h2>
@@ -159,6 +159,21 @@ export default function Room() {
         </form>
       </div>
 
+      {/* Camera View
+      <div className="w-full md:w-80 flex flex-col ml-6 md:ml-0">
+        <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
+          <h2 className="text-2xl font-black uppercase">Camera View</h2>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center p-4 border-4 border-black rounded-2xl bg-gray-200">
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="bg-gray-300 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
+              <span className="text-gray-500 font-bold">Camera Feed</span>
+            </div>
+          </div>
+        </div>
+      </div> */}
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
@@ -206,11 +221,11 @@ export default function Room() {
 
           {/* Reaction Buttons */}
           <div className="absolute -bottom-4 right-0 w-16 flex flex-col justify-end items-center gap-4 z-20">
-            {["❤️", "🔥", "😂", "🥺"].map((emoji) => (
+            {["❤️", "🔥", "😂", "🥺", "😘", "😴"].map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => sendReaction(emoji)}
-                className="text-4xl bg-white border-4 border-black rounded-full w-14 h-14 flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer active:scale-95"
+                className="text-4xl bg-white border-4 border-black rounded-full w-14 h-14 flex items-center justify-center shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer active:scale-95"
               >
                 {emoji}
               </button>
