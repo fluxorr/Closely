@@ -422,7 +422,7 @@
 //         <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
 //           <h2 className="text-2xl font-black uppercase">Camera View</h2>
 //         </div>
-        
+
 //         <div className="flex-1 flex flex-col items-center justify-center p-4 border-4 border-black rounded-2xl bg-gray-200">
 //           <div className="w-full h-full flex items-center justify-center">
 //             <div className="bg-gray-300 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
@@ -604,3 +604,15 @@
 //     </main>
 //   );
 // }
+
+
+
+const Games = () => {
+    return (
+        <div>
+            Games
+        </div>
+    )
+}
+
+export default Games

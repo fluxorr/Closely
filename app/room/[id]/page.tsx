@@ -194,12 +194,12 @@ export default function Room() {
             ROOM: {roomId || '...'}
             <span className="opacity-0 group-hover:opacity-100 text-xs bg-black text-white px-2 py-1 rounded-full transition-opacity ml-2">COPY LINK</span>
           </div>
-          <button
+          {/* <button
             onClick={() => router.push(`/room/${roomId}/games`)}
             className="bg-highlight border-4 border-black text-black px-4 py-2 font-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase cursor-pointer " disabled
           >
             Minigames
-          </button>
+          </button> */}
         </header>
 
         {/* Main Experience */}
