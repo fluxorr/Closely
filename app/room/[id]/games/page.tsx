@@ -328,7 +328,7 @@ export default function Games() {
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                             onClick={() => setActiveGame('TRIVIA')}
                             className="w-full bg-gray-300 border-8 border-black rounded-3xl p-8 cursor-not-allowed opacity-50"
-                            disabled
+
                         >
                             <h2 className="text-4xl font-display font-black uppercase mb-2">Couple Trivia</h2>
                             <p className="font-bold text-xl opacity-80">Coming Soon</p>
@@ -337,7 +337,7 @@ export default function Games() {
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                             onClick={() => setActiveGame('NHIE')}
                             className="w-full bg-gray-300 border-8 border-black rounded-3xl p-8 cursor-not-allowed opacity-50"
-                            disabled
+
                         >
                             <h2 className="text-4xl font-display font-black uppercase mb-2">Never Have I Ever</h2>
                             <p className="font-bold text-xl opacity-80">Coming Soon</p>
@@ -465,7 +465,7 @@ function TriviaGame({ deviceId }: { deviceId: string }) {
     return (
         <div className="flex flex-col items-center w-full max-w-md">
             <h2 className="text-5xl font-display font-black uppercase mb-4 tracking-widest bg-primary px-6 py-2 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">Couple Trivia</h2>
-            
+
             <div className="text-xl font-bold mb-2">Score: {score}</div>
             <div className="text-sm opacity-70 mb-8">Question {currentIndex + 1} of {TRIVIA_QUESTIONS.length}</div>
 
@@ -548,7 +548,7 @@ function NhieGame({ deviceId }: { deviceId: string }) {
     return (
         <div className="flex flex-col items-center w-full max-w-md">
             <h2 className="text-4xl font-display font-black uppercase mb-4 tracking-widest bg-destructive px-6 py-2 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">Never Have I Ever</h2>
-            
+
             <div className="text-xl font-bold mb-2">Matches: {score}</div>
 
             <div className="w-full bg-white border-4 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">

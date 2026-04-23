@@ -63,6 +63,10 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-black font-bold max-w-sm mx-auto leading-relaxed border-t-4 border-b-4 border-black py-4">
             Real-time conversations for couples to get closer.
           </p>
+          <div className="text-xl font-display font-black tracking-widest uppercase z-10 bg-white px-8 py-4 border-y-8 border-black mix-blend-normal">
+            close, even when you&apos;re not
+
+          </div>
         </div>
 
         <motion.button
@@ -70,7 +74,7 @@ export default function Home() {
           whileTap={{ scale: 0.95, y: 4, x: 4, boxShadow: "0px 0px 0px 0px rgba(0,0,0,1)" }}
           onClick={startRoom}
           disabled={isJoining}
-          className="px-12 py-6 bg-destructive text-black border-4 border-black font-black uppercase tracking-widest rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-2xl flex items-center justify-center gap-4 transition-all w-full md:w-auto"
+          className="px-12 py-6 bg-destructive text-black border-4 border-black font-black uppercase tracking-widest rounded-none shadow-brutal-md text-2xl flex items-center justify-center gap-4 transition-all w-full md:w-auto"
         >
           {isJoining ? "Launching..." : "Start Room Now"}
         </motion.button>

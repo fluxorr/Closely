@@ -29,9 +29,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <Analytics />
+
       <body className="min-h-full flex flex-col">
 
         {children}</body>
+      <div className="-my-6" >
+        <header className="flex items-center justify-center text-xs font-serif font-semibold" >made with love, for love</header>
+        <header className="flex items-center justify-center text-[10px] font-mono font-light" >-Fluxorr</header>
+      </div>
+
     </html>
   );
 }

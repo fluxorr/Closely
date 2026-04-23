@@ -42,14 +42,17 @@ export function Card({ card, isFlipped, onFlip }: { card: CardInfo, isFlipped: b
             </svg>
           </div>
 
-          <div className="absolute top-6 left-6 right-6 flex justify-between items-center text-sm font-black border-4 border-black bg-white rounded-full px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase tracking-widest z-20">
-            <span>#{card.id}</span>
+          <div className="absolute top-6 left-6 right-6 flex justify-between items-center text-sm font-black border-4 border-black bg-white rounded-full px-6 py-2 shadow-brutal uppercase tracking-widest z-20">
+            <span >#{card.id}</span>
             <span>{card.category}</span>
           </div>
 
-          <div className="text-5xl font-display font-black tracking-widest uppercase z-10 bg-white px-8 py-4 border-y-8 border-black mix-blend-screen mix-blend-normal">
+          <div className="text-5xl font-display font-black tracking-widest uppercase z-10 bg-white px-8 py-4 border-y-8 border-black mix-blend-normal">
             CLOSELY
+
           </div>
+
+
 
           <div className="absolute bottom-6 font-bold uppercase tracking-widest bg-black opacity-90 text-white px-4 py-2 rounded-full text-xs animate-pulse z-20">
             TAP TO FLIP
@@ -58,14 +61,14 @@ export function Card({ card, isFlipped, onFlip }: { card: CardInfo, isFlipped: b
 
         {/* Back (Front of card visually - after flip) */}
         <div
-          className={`absolute inset-0 rounded-[2rem] flex flex-col p-8 border-8 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] ${categoryColors[card.category] || "bg-white text-black"}`}
+          className={`absolute inset-0 rounded-[2rem] flex flex-col p-8 border-8 border-black shadow-brutal-lg ${categoryColors[card.category] || "bg-white text-black"}`}
           style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}
         >
           <div className="flex justify-between items-center mb-auto w-full">
             <div className="uppercase tracking-widest text-sm font-black border-4 border-black bg-white rounded-full px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               {card.category}
             </div>
-            <div className="font-black text-xl bg-white border-4 border-black w-10 h-10 flex items-center justify-center rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">#{card.id}</div>
+            <div className="font-black text-xl bg-white border-4 border-black w-14 h-10 flex items-center justify-center rounded-full  shadow-brutal ">#{card.id}</div>
           </div>
 
           <div className="text-3xl font-display font-black text-center leading-tight [text-wrap:balance] w-full my-auto py-8">
