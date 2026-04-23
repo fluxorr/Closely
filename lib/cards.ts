@@ -379,6 +379,35 @@ export const CARDS: CardInfo[] = [
   { id: '349', category: 'fun', text: 'If we lived in a sitcom, what would be the episode where everything goes wrong?' },
   { id: '350', category: 'fun', text: 'What is something I do when I think you are not looking that you act like you did not see?' },
 
+  // ─── EXTRA DEEP ──────────────────────────────────────────────────────────────
+  { id: '410', category: 'deep', text: 'What is a version of our future you are secretly excited about but too scared to admit?' },
+  { id: '411', category: 'deep', text: 'What is the one thing about this relationship that still surprises you about yourself?' },
+  { id: '412', category: 'deep', text: 'What is something you have learned about love that you never learned from anyone else?' },
+  { id: '413', category: 'deep', text: 'What is a moment when you realized you would wait for me no matter how long it takes?' },
+  { id: '414', category: 'deep', text: 'What is your unfiltered opinion about the way I show love?' },
+  { id: '415', category: 'deep', text: 'What is a fear you have that you have not told me because you do not want to worry me?' },
+  { id: '416', category: 'deep', text: 'What is the most selfless thing you have ever done for us?' },
+  { id: '417', category: 'deep', text: 'What is something you wish we could do differently but feel stuck about?' },
+  { id: '418', category: 'deep', text: 'What does "forever" actually look like in your mind?' },
+  { id: '419', category: 'deep', text: 'If you could change one thing about how we handle conflict, what would it be?' },
+
+  // ─── EXTRA FUN ─────────────────────────────────────────────────────────
+  { id: '420', category: 'fun', text: 'What is the most ridiculous thing you have defending me about?' },
+  { id: '421', category: 'fun', text: 'If we had a theme song that was an 80s ballad, what would be the most embarrassing lyric?' },
+  { id: '422', category: 'fun', text: 'What is a inside joke we have that would make no sense to anyone else?' },
+  { id: '423', category: 'fun', text: 'If I was a car, what make and model would I be and is it a compliment?' },
+  { id: '424', category: 'fun', text: 'What is the most extra thing you have done just to impress me?' },
+  { id: '425', category: 'fun', text: 'If we made a scrapbook together, what would the first page say?' },
+  { id: '426', category: 'fun', text: 'What is your least favorite thing about my cooking?' },
+  { id: '427', category: 'fun', text: 'If we were in a boy band, what would be our worst music video?' },
+  { id: '428', category: 'fun', text: 'What is the most extra thing I have done that you secretly loved?' },
+  { id: '429', category: 'fun', text: 'If we had to rename ourselves as a couple, what would our couple name be?' },
+  { id: '430', category: 'fun', text: 'What is a movie trope we actually live out in our relationship?' },
+  { id: '431', category: 'fun', text: 'If we had a dating bio for each other, what would we swipe left on?' },
+  { id: '432', category: 'fun', text: 'What is your favorite thing about the way I sleep?' },
+  { id: '433', category: 'fun', text: 'If we were fictional characters, what genre would our story be?' },
+  { id: '434', category: 'fun', text: 'What is the most useless fact about me that you know?' },
+
   // ─── MORE NAUGHTY ─────────────────────────────────────────────────────
   { id: '351', category: 'naughty', text: 'What is the spiciest thing you want to whisper in my ear before we start?' },
   { id: '352', category: 'naughty', text: 'If you could only touch one part of my body for the rest of the night, what do you choose?' },

@@ -3,9 +3,20 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { Card } from "../../../components/Card";
-import { CARDS } from "../../../lib/cards";
+import { CARDS, type Category } from "../../../lib/cards";
 import { useMockSocket } from "../../../lib/socket";
 import { motion, AnimatePresence } from "framer-motion";
+
+const CATEGORIES: { value: Category | 'all'; label: string }[] = [
+  { value: 'all', label: '🎲 Random' },
+  { value: 'deep', label: '💜 Deep' },
+  { value: 'fun', label: '😂 Fun' },
+  { value: 'memory', label: '🎞️ Memory' },
+  { value: 'game', label: '🎮 Game' },
+  { value: 'action', label: '⚡ Action' },
+  { value: 'spicy', label: '🔥 Spicy' },
+  { value: 'naughty', label: '😈 Naughty' },
+];
 
 export default function Room() {
   const params = useParams();
@@ -15,6 +26,7 @@ export default function Room() {
   const [userName, setUserName] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
 
   useEffect(() => {
     const saved = localStorage.getItem('closely_name');
@@ -33,6 +45,13 @@ export default function Room() {
 
   const card = CARDS[currentCardIndex % CARDS.length];
 
+  const getFilteredCards = () => {
+    if (selectedCategory === 'all') {
+      return CARDS.map((_, i) => i);
+    }
+    return CARDS.map((c, i) => c.category === selectedCategory ? i : -1).filter(i => i !== -1);
+  };
+
   useEffect(() => {
     if (chatOpen && chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -42,13 +61,15 @@ export default function Room() {
   const nextCard = () => {
     setIsFlipped(false);
     setTimeout(() => {
-      const usedCardsKey = `used_cards_${roomId}`;
+      const usedCardsKey = `used_cards_${roomId}_${selectedCategory}`;
       const usedCards = JSON.parse(localStorage.getItem(usedCardsKey) || '[]');
-      const availableIndices = CARDS.map((_, i) => i).filter(i => !usedCards.includes(i));
+      const filteredIndices = getFilteredCards();
+      
+      const availableIndices = filteredIndices.filter(i => !usedCards.includes(i));
       
       if (availableIndices.length === 0) {
         localStorage.setItem(usedCardsKey, '[]');
-        sendCardChange(Math.floor(Math.random() * CARDS.length));
+        sendCardChange(filteredIndices[Math.floor(Math.random() * filteredIndices.length)]);
         return;
       }
       
@@ -258,12 +279,32 @@ export default function Room() {
         </div>
 
         {/* Footer Controls */}
-        <div className="w-full max-w-xl mx-auto pb-4 pt-8 z-10 flex gap-4">
+        <div className="w-full max-w-xl mx-auto pb-4 pt-8 z-10 flex flex-col gap-4">
+          {/* Category Filter */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value as Category | 'all')}
+                className="appearance-none bg-white border-4 border-black px-6 py-3 pr-12 rounded-full font-black text-lg shadow-brutal cursor-pointer focus:outline-none focus:ring-4 focus:ring-secondary hover:translate-y-0.5 hover:translate-x-0.5 transition-all uppercase"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-xl">
+                ▾
+              </div>
+            </div>
+          </div>
+
           {/* Draw Card button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={nextCard}
-            className="flex-1 py-4 bg-primary text-black font-black text-2xl uppercase rounded-2xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
+            className="w-full py-4 bg-primary text-black font-black text-2xl uppercase rounded-2xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
           >
             Draw Next
           </motion.button>
