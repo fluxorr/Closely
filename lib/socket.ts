@@ -72,13 +72,13 @@ export function useMockSocket(roomId: string, currentName?: string) {
     await fetch(`/api/room/${roomId}`, { method: 'POST', body: JSON.stringify({ type: 'CHAT', chat: chatMsg }) });
   };
 
-  const updateGameState = async (gameType: 'GAME_TTT' | 'GAME_RPS' | 'GAME_TUG', newState: any) => {
+  const updateGameState = async (gameType: 'GAME_TTT' | 'GAME_RPS' | 'GAME_HOTPOTATO', newState: any) => {
     // Optimistic UI
     setGames((prev: any) => {
       if (!prev) return prev;
       if (gameType === 'GAME_TTT') return { ...prev, ticTacToe: newState };
       if (gameType === 'GAME_RPS') return { ...prev, rps: newState };
-      if (gameType === 'GAME_TUG') return { ...prev, tug: newState };
+      if (gameType === 'GAME_HOTPOTATO') return { ...prev, hotPotato: newState };
       return prev;
     });
     await fetch(`/api/room/${roomId}`, { method: 'POST', body: JSON.stringify({ type: gameType, state: newState }) });

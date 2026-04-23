@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { Card } from "../../../components/Card";
 import { CARDS } from "../../../lib/cards";
 import { useMockSocket } from "../../../lib/socket";
@@ -42,7 +42,20 @@ export default function Room() {
   const nextCard = () => {
     setIsFlipped(false);
     setTimeout(() => {
-      sendCardChange(Math.floor(Math.random() * CARDS.length));
+      const usedCardsKey = `used_cards_${roomId}`;
+      const usedCards = JSON.parse(localStorage.getItem(usedCardsKey) || '[]');
+      const availableIndices = CARDS.map((_, i) => i).filter(i => !usedCards.includes(i));
+      
+      if (availableIndices.length === 0) {
+        localStorage.setItem(usedCardsKey, '[]');
+        sendCardChange(Math.floor(Math.random() * CARDS.length));
+        return;
+      }
+      
+      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      const newUsedCards = [...usedCards, randomIndex];
+      localStorage.setItem(usedCardsKey, JSON.stringify(newUsedCards.slice(-50)));
+      sendCardChange(randomIndex);
     }, 300);
   };
 
@@ -107,80 +120,91 @@ export default function Room() {
 
   return (
     <main className="flex min-h-screen flex-col md:flex-row p-6 overflow-hidden relative selection:bg-froly selection:text-white">
-      {/* Sidebar Chat */}
-      <div className="w-full md:w-md flex flex-col md:flex-col md:mr-12 border-r-4 border-black">
-        {/* Chat header */}
-        <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
-          <h2 className="text-2xl font-black uppercase">Room Chat</h2>
-        </div>
+      {/* Chat Button */}
+      <button
+        onClick={() => setChatOpen(true)}
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-secondary border-4 border-black rounded-full flex items-center justify-center text-3xl font-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:scale-105 transition-transform"
+        style={{ display: chatOpen ? 'none' : 'flex' }}
+      >
+        💬
+      </button>
 
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 mb-4">
-          {chats.map((msg, i) => {
-            const isMe = msg.sender === 'Me';
-            return (
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                key={msg.id + i}
-                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
-              >
-                <span className="text-xs font-bold mb-1 opacity-60 uppercase">
-                  {isMe ? 'You' : msg.senderName || 'Anonymous'}
-                </span>
-                <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl border-4 border-black font-bold text-lg 
-                  ${isMe ? 'bg-primary text-black rounded-br-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black rounded-bl-none shadow-[-4px_4px_0px_0px_rgba(0,0,0,1)]'}`}
-                >
-                  {msg.text}
-                </div>
-              </motion.div>
-            );
-          })}
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Chat Input */}
-        <form onSubmit={handleChatSubmit} className="p-4 border-t-4 border-black bg-white flex gap-2">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Say something..."
-            className="flex-1 border-4 border-black rounded-xl px-4 py-3 font-bold text-lg focus:outline-none focus:ring-4 focus:ring-secondary focus:border-black"
-          />
-          <button
-            type="submit"
-            disabled={!chatInput.trim()}
-            className="bg-accent text-black border-4 border-black px-6 font-black rounded-xl text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase disabled:opacity-50 cursor-pointer"
+      {/* Chat Sidebar */}
+      <AnimatePresence>
+        {chatOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
+            className="fixed inset-y-0 right-0 z-50 w-full md:w-md bg-[#fffcf2] md:bg-transparent flex"
           >
-            Send
-          </button>
-        </form>
-      </div>
+            <div className="w-full md:w-md flex flex-col border-4 border-black md:border-r-4 md:border-black h-full">
+              <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary">
+                <h2 className="text-2xl font-black uppercase">Chat</h2>
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="bg-white border-2 border-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100"
+                >
+                  ✕ Close
+                </button>
+              </div>
 
-      {/* Camera View
-      <div className="w-full md:w-80 flex flex-col ml-6 md:ml-0">
-        <div className="flex justify-between items-center p-4 border-b-4 border-black bg-secondary mb-4">
-          <h2 className="text-2xl font-black uppercase">Camera View</h2>
-        </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 mb-4 max-h-[60vh] md:max-h-none">
+                {chats.map((msg, i) => {
+                  const isMe = msg.sender === 'Me';
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      key={msg.id + i}
+                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                    >
+                      <span className="text-xs font-bold mb-1 opacity-60 uppercase">
+                        {isMe ? 'You' : msg.senderName || 'Anonymous'}
+                      </span>
+                      <div
+                        className={`max-w-[80%] px-4 py-3 rounded-2xl border-4 border-black font-bold text-lg 
+                        ${isMe ? 'bg-primary text-black rounded-br-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black rounded-bl-none shadow-[-4px_4px_0px_0px_rgba(0,0,0,1)]'}`}
+                      >
+                        {msg.text}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                <div ref={chatEndRef} />
+              </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center p-4 border-4 border-black rounded-2xl bg-gray-200">
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="bg-gray-300 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
-              <span className="text-gray-500 font-bold">Camera Feed</span>
+              <form onSubmit={handleChatSubmit} className="p-4 border-t-4 border-black bg-white flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Say something..."
+                  className="flex-1 border-4 border-black rounded-xl px-4 py-3 font-bold text-lg focus:outline-none focus:ring-4 focus:ring-secondary focus:border-black"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="bg-accent text-black border-4 border-black px-6 font-black rounded-xl text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[4px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase disabled:opacity-50 cursor-pointer"
+                >
+                  Send
+                </button>
+              </form>
             </div>
-          </div>
-        </div>
-      </div> */}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content - always visible, chat overlay doesn't affect layout */}
+      <div className="flex-1 flex flex-col items-center">
         {/* Header */}
         <header className="w-full flex justify-between items-center z-10 max-w-xl mx-auto pt-4 relative">
-          <div className="flex -space-x-4">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-sm font-black border-4 border-black z-20">ME</div>
-            <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-sm font-black border-4 border-black z-10">U</div>
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-4">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-sm font-black border-4 border-black z-20">ME</div>
+              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-sm font-black border-4 border-black z-10">U</div>
+            </div>
           </div>
           <div className="text-xl font-bold bg-white text-black border-4 border-black px-6 py-2 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase tracking-wider flex items-center gap-2 group cursor-pointer active:translate-y-1 active:translate-x-1 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all"
             onClick={() => {
@@ -194,12 +218,12 @@ export default function Room() {
             ROOM: {roomId || '...'}
             <span className="opacity-0 group-hover:opacity-100 text-xs bg-black text-white px-2 py-1 rounded-full transition-opacity ml-2">COPY LINK</span>
           </div>
-          {/* <button
+          <button
             onClick={() => router.push(`/room/${roomId}/games`)}
-            className="bg-highlight border-4 border-black text-black px-4 py-2 font-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase cursor-pointer " disabled
+            className="bg-highlight border-4 border-black text-black px-4 py-2 font-black rounded-lg shadow-brutal hover:translate-y-1 hover:translate-x-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase cursor-pointer "
           >
             Minigames
-          </button> */}
+          </button>
         </header>
 
         {/* Main Experience */}

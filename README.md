@@ -1,74 +1,105 @@
 # Closely
 
-A real-time conversational experience for couples to deepen their connection through thoughtful prompts and interactive activities.
+A real-time conversation and games experience for couples to deepen their connection through interactive prompts and activities.
 
-## 🌟 Core Features
+## Features
 
-### 🃏 Card-Based Conversations
-- **Interactive Cards**: Flip through thought-provoking questions categorized into:
-  - Deep: Emotional and meaningful conversations
-  - Fun: Lighthearted and playful prompts
-  - Memory: Nostalgic and relationship-building moments
-  - Action: Direct, intimate activities
-  - Spicy: Intimate and sensual prompts
-  - Naughty: Explicit and teasing scenarios
-- **Dynamic Card Drawing**: Draw new cards to keep conversations fresh and engaging
+### Card-Based Conversations
+- Interactive cards with thought-provoking questions
+- Categories: Deep, Fun, Memory, Action, Spicy, Naughty
+- Smooth flip animations
+- Card uniqueness - each card in a room is drawn only once (stored in localStorage)
+- Resets when all cards have been used
 
-### 💬 Real-Time Chat
-- **Synchronized Messaging**: Communicate with your partner in real-time
-- **Message History**: See all conversation history within the room
-- **Name Persistence**: Remember your name across sessions
+### Real-Time Chat
+- Synchronized messaging between partners
+- Message history within the room
+- Collapsible sidebar (slides in from right)
+- Chat button always visible on screen
+- Name persistence across sessions
 
-### ❤️ Express Your Feelings
-- **Emotional Reactions**: React to conversations with 6 different emojis
-- **Visual Feedback**: See reactions floating across the screen in real-time
+### Reactions
+- React to conversations with emojis (❤️, 🔥, 😂, 🥺, 😘, 😴)
+- Floating animation across the screen in real-time
 
-### 🎮 Mini Games (Coming Soon)
-- **Tic Tac Toe**: Classic game with real-time updates
-- **Rock Paper Scissors**: Play against your partner
-- **Tug of War**: Competitive fun with visual feedback
+### Mini Games
 
-## 🚀 Quick Start
+#### Tic Tac Toe
+- Classic X and O game
+- Real-time syncing between players
+- Winner detection and winning line highlight
+- Reset board functionality
 
-1. Visit the app and click "Start Room Now"
-2. Enter your name to join a new room
-3. Share the room link with your partner
-4. Start drawing cards and connecting!
+#### Rock Paper Scissors
+- Player vs player gameplay
+- Secret choice phase, then reveal
+- Win detection with celebration animation
 
-## 🎨 Design Philosophy
+#### Hot Potato
+- Pass the "hot potato" before it explodes
+- Timer countdown
+- Visual feedback when holding the potato
 
-Closely features a bold, neo-brutalist design with:
-- High-contrast color scheme
-- Playful animations and interactions
-- Hand-drawn aesthetic elements
-- Responsive layout for all devices
+### Room System
+- Unique room codes for sharing
+- Copy room link button
+- Device-based identification
 
-## 🔧 Technology Stack
+## Quick Start
 
-- Next.js 14 (App Router)
-- React 18
+1. Run `npm install` and `npm run dev`
+2. Open http://localhost:3000
+3. Enter a room code or create new room
+4. Enter your name to join
+5. Share the room link with your partner
+6. Start drawing cards and playing games
+
+## Design
+
+Neo-brutalist aesthetic with:
+- Bold black borders (4px)
+- Hard drop shadows
+- High-contrast colors
+- Playful animations (Framer Motion)
+- Responsive layout for mobile and desktop
+
+## Technology
+
+- Next.js 16 (App Router with Turbopack)
+- React 19
 - TypeScript
 - Tailwind CSS
 - Framer Motion
-- Next.js App Router
+- LocalStorage for persistence
 
-## 📱 Features
+## Folder Structure
 
-- Real-time synchronization across devices
-- Local storage for persistent user data
-- Responsive design for mobile and desktop
-- No external dependencies beyond core React ecosystem
-- Mocked backend for demonstration purposes
-
-## 🛠️ Development
-
-This project uses Next.js with the App Router. To run locally:
-
-```bash
-npm install
-npm run dev
+```
+app/
+├── room/[id]/
+│   ├── page.tsx      # Main card room
+│   └── games/
+│       └── page.tsx  # Arcade games
+lib/
+├── socket.ts         # Mock real-time sync
+└── cards.ts        # Card prompts
+components/
+└── Card.tsx       # Card component
 ```
 
-## 📝 License
+## API Routes
+
+```
+/api/room/[id]     # GET (sync state), POST (update state)
+```
+
+## Notes
+
+- Uses mock WebSocket (polling-based) for real-time sync
+- Data stored in memory on server
+- Device ID used for player identification
+- Suitable for local development/demo only
+
+## License
 
 MIT
