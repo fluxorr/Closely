@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockSocket } from "../../../../lib/socket";
 
-type GameType = "TTT" | "RPS" | "HOTPOTATO";
+type GameType = "TTT" | "RPS" | "HOTPOTATO" | "TRIVIA" | "NHIE";
 
 const WINNING_LINES = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -14,6 +14,74 @@ const WINNING_LINES = [
 ];
 
 const RPS_CHOICES = ["rock", "paper", "scissors"] as const;
+
+const TRIVIA_QUESTIONS = [
+    "What is my favorite food?",
+    "What is my favorite movie?",
+    "What is my favorite song?",
+    "What is my favorite color?",
+    "What is my favorite season?",
+    "What is my favorite animal?",
+    "What is my favorite dessert?",
+    "What is my favorite holiday?",
+    "What is my favorite sport?",
+    "What is my dream job?",
+    "What is my biggest fear?",
+    "What is my favorite childhood memory?",
+    "What is the country I want to visit most?",
+    "What is my favorite time of day?",
+    "What is my favorite thing to do on a weekend?",
+    "What is my guilty pleasure?",
+    "What is my favorite restaurant?",
+    "What is my favorite ice cream flavor?",
+    "What is my pet peeve?",
+    "What is my biggest dream?"
+];
+
+const TRIVIA_ANSWERS: Record<string, string> = {
+    "What is my favorite food?": "pizza",
+    "What is my favorite movie?": "inception",
+    "What is my favorite song?": "blinding lights",
+    "What is my favorite color?": "black",
+    "What is my favorite season?": "winter",
+    "What is my favorite animal?": "dog",
+    "What is my favorite dessert?": "ice cream",
+    "What is my favorite holiday?": "christmas",
+    "What is my favorite sport?": "football",
+    "What is my biggest fear?": "heights",
+    "What is my favorite childhood memory?": "family road trips",
+    "What is the country I want to visit most?": "japan",
+    "What is my favorite time of day?": "night",
+    "What is my favorite thing to do on a weekend?": "sleep",
+    "What is my guilty pleasure?": "snacking",
+    "What is my favorite restaurant?": "chipotle",
+    "What is my favorite ice cream flavor?": "mint chocolate chip",
+    "What is my pet peeve?": "mouth noises",
+    "What is my biggest dream?": "financial freedom"
+};
+
+const NHIE_STATEMENTS = [
+    "Never have I ever kissed someone outside",
+    "Never have I ever been in a fight",
+    "Never have I ever traveled alone",
+    "Never have I ever lied to my partner",
+    "Never have I ever stalked an ex",
+    "Never have I ever went skinny dipping",
+    "Never have I ever ghosted someone",
+    "Never have I ever lied about my age",
+    "Never have I ever cheated on a test",
+    "Never have I ever been in love at first sight",
+    "Never have I ever lied in a job interview",
+    "Never have I ever said sorry when I was not wrong",
+    "Never have I ever cried during a movie",
+    "Never have I ever faked being sick",
+    "Never have I ever regretsed a text after sending",
+    "Never have I ever ignored a call from mom",
+    "Never have I ever been in a long distance relationship before",
+    "Never have I ever fell asleep in public",
+    "Never have I ever stolen food from someone",
+    "Never have I ever been in love with two people at once"
+];
 
 export default function Games() {
     const params = useParams();
@@ -256,6 +324,24 @@ export default function Games() {
                             <h2 className="text-4xl font-display font-black uppercase mb-2">Hot Potato</h2>
                             <p className="font-bold text-xl opacity-80">Don't get caught with the hot potato!</p>
                         </motion.div>
+
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                            onClick={() => setActiveGame('TRIVIA')}
+                            className="w-full bg-gray-300 border-8 border-black rounded-3xl p-8 cursor-not-allowed opacity-50"
+                            disabled
+                        >
+                            <h2 className="text-4xl font-display font-black uppercase mb-2">Couple Trivia</h2>
+                            <p className="font-bold text-xl opacity-80">Coming Soon</p>
+                        </motion.div>
+
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                            onClick={() => setActiveGame('NHIE')}
+                            className="w-full bg-gray-300 border-8 border-black rounded-3xl p-8 cursor-not-allowed opacity-50"
+                            disabled
+                        >
+                            <h2 className="text-4xl font-display font-black uppercase mb-2">Never Have I Ever</h2>
+                            <p className="font-bold text-xl opacity-80">Coming Soon</p>
+                        </motion.div>
                     </div>
                 ) : activeGame === 'TTT' ? (
                     <div className="flex flex-col items-center w-full max-w-md">
@@ -335,11 +421,178 @@ export default function Games() {
 
                         <button onClick={resetRps} className="mt-12 px-8 py-3 bg-white border-4 border-black font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-lg hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase cursor-pointer">Play Again</button>
                     </div>
+                ) : activeGame === 'TRIVIA' ? (
+                    <TriviaGame deviceId={deviceId} />
+                ) : activeGame === 'NHIE' ? (
+                    <NhieGame deviceId={deviceId} />
                 ) : (
                     <HotPotatoGame deviceId={deviceId} chats={chats} />
                 )}
             </div>
         </main>
+    );
+}
+
+function TriviaGame({ deviceId }: { deviceId: string }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [userAnswer, setUserAnswer] = useState("");
+    const [showAnswer, setShowAnswer] = useState(false);
+    const [score, setScore] = useState(0);
+    const [opponentAnswer, setOpponentAnswer] = useState("");
+
+    const currentQuestion = TRIVIA_QUESTIONS[currentIndex];
+
+    const handleSubmit = () => {
+        setShowAnswer(true);
+    };
+
+    const handleCorrect = () => {
+        setScore(score + 1);
+        nextQuestion();
+    };
+
+    const handleWrong = () => {
+        nextQuestion();
+    };
+
+    const nextQuestion = () => {
+        setShowAnswer(false);
+        setUserAnswer("");
+        setOpponentAnswer("");
+        setCurrentIndex((currentIndex + 1) % TRIVIA_QUESTIONS.length);
+    };
+
+    return (
+        <div className="flex flex-col items-center w-full max-w-md">
+            <h2 className="text-5xl font-display font-black uppercase mb-4 tracking-widest bg-primary px-6 py-2 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">Couple Trivia</h2>
+            
+            <div className="text-xl font-bold mb-2">Score: {score}</div>
+            <div className="text-sm opacity-70 mb-8">Question {currentIndex + 1} of {TRIVIA_QUESTIONS.length}</div>
+
+            <div className="w-full bg-white border-4 border-black p-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-8">
+                <div className="text-2xl font-black text-center">{currentQuestion}</div>
+            </div>
+
+            {!showAnswer ? (
+                <div className="flex flex-col gap-4 w-full">
+                    <input
+                        type="text"
+                        value={userAnswer}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        placeholder="Type your answer..."
+                        className="w-full border-4 border-black rounded-xl px-4 py-3 font-bold text-lg focus:outline-none"
+                    />
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleSubmit}
+                        className="w-full py-4 bg-secondary border-4 border-black font-black text-xl rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        Reveal Answer
+                    </motion.button>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-4 w-full">
+                    <div className="w-full bg-accent border-4 border-black p-4 rounded-xl">
+                        <div className="text-lg font-bold text-center">Correct Answer:</div>
+                        <div className="text-2xl font-black text-center">{TRIVIA_ANSWERS[currentQuestion] || "pizza"}</div>
+                    </div>
+                    <div className="flex gap-4">
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleWrong}
+                            className="flex-1 py-4 bg-white border-4 border-black font-black text-xl rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        >
+                            Wrong
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleCorrect}
+                            className="flex-1 py-4 bg-primary border-4 border-black font-black text-xl rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        >
+                            Correct!
+                        </motion.button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function NhieGame({ deviceId }: { deviceId: string }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [myChoice, setMyChoice] = useState<boolean | null>(null);
+    const [showResult, setShowResult] = useState(false);
+    const [score, setScore] = useState(0);
+
+    const currentStatement = NHIE_STATEMENTS[currentIndex];
+
+    const handleChoice = (haveOrNot: boolean) => {
+        setMyChoice(haveOrNot);
+        setShowResult(true);
+    };
+
+    const handleNext = () => {
+        setCurrentIndex((currentIndex + 1) % NHIE_STATEMENTS.length);
+        setMyChoice(null);
+        setShowResult(false);
+    };
+
+    const handleBothSame = () => {
+        if (myChoice) setScore(score + 1);
+        handleNext();
+    };
+
+    return (
+        <div className="flex flex-col items-center w-full max-w-md">
+            <h2 className="text-4xl font-display font-black uppercase mb-4 tracking-widest bg-destructive px-6 py-2 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">Never Have I Ever</h2>
+            
+            <div className="text-xl font-bold mb-2">Matches: {score}</div>
+
+            <div className="w-full bg-white border-4 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+                <div className="text-2xl font-black text-center">{currentStatement}</div>
+            </div>
+
+            {!showResult ? (
+                <div className="flex gap-4 w-full">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleChoice(false)}
+                        className="flex-1 py-6 bg-primary border-4 border-black font-black text-2xl rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        NEVER
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleChoice(true)}
+                        className="flex-1 py-6 bg-secondary border-4 border-black font-black text-2xl rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        HAVE!
+                    </motion.button>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-4 w-full">
+                    <div className="text-3xl font-black text-center mb-4">
+                        {myChoice ? "YOU HAVE!" : "NEVER!"}
+                    </div>
+                    <div className="text-center text-lg opacity-70 mb-4">
+                        {myChoice ? "Your partner goes next!" : "Share your story!"}
+                    </div>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleBothSame}
+                        className="w-full py-4 bg-accent border-4 border-black font-black text-xl rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        Both Have / Next
+                    </motion.button>
+                </div>
+            )}
+        </div>
     );
 }
 
