@@ -16,6 +16,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Closely",
   description: "Get Closer to your LDR Partner.",
+  metadataBase: new URL("https://closely.example.com"),
+  openGraph: {
+    title: "Closely",
+    description: "Get Closer to your LDR Partner.",
+    url: "https://closely.example.com",
+    siteName: "Closely",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Closely",
+    description: "Get Closer to your LDR Partner.",
+  },
 };
 
 export default function RootLayout({
