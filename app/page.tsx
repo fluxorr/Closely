@@ -2,19 +2,34 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
   const [isJoining, setIsJoining] = useState(false);
 
   const startRoom = () => {
+    if (isJoining) return;
     setIsJoining(true);
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
     setTimeout(() => {
       router.push(`/room/${roomId}`);
     }, 400);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !isJoining) {
+        startRoom();
+      }
+      if (e.key === "Escape" && isJoining) {
+        setIsJoining(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isJoining]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden bg-[#fffcf2] selection:bg-froly selection:text-white">
@@ -69,14 +84,22 @@ export default function Home() {
           </div>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05, y: -4, x: -4, boxShadow: "12px 12px 0px 0px rgba(0,0,0,1)" }}
-          whileTap={{ scale: 0.95, y: 4, x: 4, boxShadow: "0px 0px 0px 0px rgba(0,0,0,1)" }}
+<motion.button
+          whileHover={isJoining ? {} : { scale: 1.05, y: -4, x: -4, boxShadow: "12px 12px 0px_0px_rgba(0,0,0,1)" }}
+          whileTap={{ scale: 0.95, y: 4, x: 4, boxShadow: "0px_0px_0px_0px_rgba(0,0,0,1)" }}
           onClick={startRoom}
           disabled={isJoining}
-          className="px-12 py-6 bg-destructive text-black border-4 border-black font-black uppercase tracking-widest rounded-none shadow-brutal-md text-2xl flex items-center justify-center gap-4 transition-all w-full md:w-auto"
+          style={{ touchAction: "manipulation" }}
+          className="px-12 py-6 bg-destructive text-black border-4 border-black font-black uppercase tracking-widest rounded-none shadow-brutal-md text-2xl flex items-center justify-center gap-4 transition-all w-full md:w-auto disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-black focus:ring-offset-4"
         >
-          {isJoining ? "Launching..." : "Start Room Now"}
+          {isJoining ? (
+            <>
+              <Loader2 className="w-6 h-6 animate-spin" />
+              Launching...
+            </>
+          ) : (
+            "Start Room Now"
+          )}
         </motion.button>
       </motion.div>
     </main>
