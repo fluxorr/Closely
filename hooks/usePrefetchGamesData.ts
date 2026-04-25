@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export function usePrefetchGamesData(roomId: string) {
-  const [isPrefetched, setIsPrefetched] = useState(false);
+  const fetchedRef = useRef(false);
 
   const prefetch = useCallback(async () => {
-    if (isPrefetched || !roomId) return;
+    if (fetchedRef.current || !roomId) return;
     try {
       await fetch(`/api/room/${roomId}`, { method: 'GET', cache: 'force-cache' });
-      setIsPrefetched(true);
+      fetchedRef.current = true;
     } catch (e) {
       console.warn('Failed to prefetch games data', e);
     }
-  }, [roomId, isPrefetched]);
+  }, [roomId]);
 
   useEffect(() => {
     const timer = setTimeout(prefetch, 3000);

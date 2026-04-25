@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, Suspense, lazy, useCallback } from "react";
+import { useState, useEffect, Suspense, lazy, useCallback, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMockSocket } from "../../../../lib/socket";
 
@@ -137,7 +137,7 @@ function GamesContent() {
     else router.push(`/room/${roomId}`);
   };
 
-  const handleChatSubmit = (e: React.FormEvent) => {
+  const handleChatSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
     sendChat(chatInput.trim());
