@@ -13,22 +13,65 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const META_URL = "https://closely.example.com";
+const META_IMG = `${META_URL}/og-image.png`;
+
 export const metadata: Metadata = {
-  title: "Closely",
-  description: "Get Closer to your LDR Partner.",
-  metadataBase: new URL("https://closely.example.com"),
+  metadataBase: new URL(META_URL),
+  title: {
+    default: "Closely",
+    template: "%s | Closely",
+  },
+  description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
+  keywords: ["LDR", "long distance relationship", "couples", "connection", "together", " Valentine's Day", "gift"],
+  authors: [{ name: "Fluxorr" }],
+  creator: "Fluxorr",
+  publisher: "Closely",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Closely",
-    description: "Get Closer to your LDR Partner.",
-    url: "https://closely.example.com",
+    title: {
+      default: "Closely",
+      template: "%s | Closely",
+    },
+    description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
+    url: META_URL,
     siteName: "Closely",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: META_IMG,
+        width: 1200,
+        height: 630,
+        alt: "Closely - Stay connected with your loved ones",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Closely",
-    description: "Get Closer to your LDR Partner.",
+    title: {
+      default: "Closely",
+      template: "%s | Closely",
+    },
+    description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
+    images: [META_IMG],
+    creator: "@Fluxorr",
+  },
+  alternates: {
+    canonical: META_URL,
+    languages: {
+      en: META_URL,
+    },
   },
 };
 
@@ -44,7 +87,31 @@ export default function RootLayout({
     >
       <Analytics />
 
-      <body className="min-h-full flex flex-col">
+<body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Closely",
+              description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
+              url: META_URL,
+              applicationCategory: "SocialNetworking",
+              operatingSystem: "Web Browser",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              creator: {
+                "@type": "Organization",
+                name: "Closely",
+                creator: "Fluxorr",
+              },
+            }),
+          }}
+        />
 
         {children}</body>
       <div className="-my-6" >

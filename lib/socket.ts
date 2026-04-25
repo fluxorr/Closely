@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export interface ChatMessage {
   id: string;
@@ -13,22 +13,32 @@ export function useMockSocket(roomId: string, currentName?: string) {
   const [reactions, setReactions] = useState<{ id: number, emoji: string, x: number }[]>([]);
   const [chats, setChats] = useState<ChatMessage[]>([]);
   const [games, setGames] = useState<any>(null);
+  const lastFetchRef = useRef<number>(0);
+  const mountedRef = useRef(true);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let _mounted = true;
+    mountedRef.current = true;
     
     if (typeof window !== 'undefined' && !localStorage.getItem('deviceId')) {
       localStorage.setItem('deviceId', Math.random().toString(36).slice(2));
     }
     const deviceId = typeof window !== 'undefined' ? localStorage.getItem('deviceId') : 'unknown';
 
-    const poll = async () => {
+    const poll = async (isBackground = false) => {
+      const now = Date.now();
+      if (isBackground && now - lastFetchRef.current < 2000) return;
+      lastFetchRef.current = now;
+      
       try {
-        const res = await fetch(`/api/room/${roomId}`);
+        const res = await fetch(`/api/room/${roomId}`, { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         if (!res.ok) return;
         const data = await res.json();
         
-        if (!_mounted) return;
+        if (!mountedRef.current) return;
         
         setCurrentCardIndex(data.cardIndex);
         setReactions(data.reactions || []);
@@ -45,12 +55,13 @@ export function useMockSocket(roomId: string, currentName?: string) {
       } catch(e) {}
     }
 
-    const interval = setInterval(poll, 1000);
-    poll(); 
+    poll();
+    
+    pollingRef.current = setInterval(() => poll(true), 3000);
     
     return () => {
-      _mounted = false;
-      clearInterval(interval);
+      mountedRef.current = false;
+      if (pollingRef.current) clearInterval(pollingRef.current);
     }
   }, [roomId]);
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState, useRef, useEffect, FormEvent } from "react";
+import { useParams } from "next/navigation";
+import { Suspense, useCallback, useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { usePrefetchGamesData } from "../../../hooks/usePrefetchGamesData";
 import { Card } from "../../../components/Card";
 import { CARDS, type Category } from "../../../lib/cards";
 import { useMockSocket } from "../../../lib/socket";
@@ -18,11 +20,20 @@ const CATEGORIES: { value: Category | 'all'; label: string }[] = [
   { value: 'naughty', label: '😈 Naughty' },
 ];
 
-export default function Room() {
-  const params = useParams();
-  const roomId = params?.id as string;
-  const router = useRouter();
+function LoadingSkeleton() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#fffcf2]">
+      <div className="bg-white border-8 border-black p-8 md:p-12 rounded-[2rem] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] w-full max-w-sm animate-pulse">
+        <div className="h-12 bg-gray-200 rounded mb-4 w-3/4"></div>
+        <div className="h-6 bg-gray-200 rounded mb-8 w-1/2"></div>
+        <div className="h-16 bg-gray-200 rounded mb-4"></div>
+        <div className="h-16 bg-gray-200 rounded w-full mt-8"></div>
+      </div>
+    </main>
+  );
+}
 
+function CardContent({ roomId }: { roomId: string }) {
   const [userName, setUserName] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -38,6 +49,8 @@ export default function Room() {
 
   const { currentCardIndex, sendCardChange, reactions, sendReaction, chats, sendChat } = useMockSocket(roomId, userName);
 
+  usePrefetchGamesData(roomId);
+
   const [isFlipped, setIsFlipped] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
@@ -45,12 +58,18 @@ export default function Room() {
 
   const card = CARDS[currentCardIndex % CARDS.length];
 
-  const getFilteredCards = () => {
+  const [exitRotation, setExitRotation] = useState(10);
+  
+  const getFilteredCards = useCallback(() => {
     if (selectedCategory === 'all') {
       return CARDS.map((_, i) => i);
     }
     return CARDS.map((c, i) => c.category === selectedCategory ? i : -1).filter(i => i !== -1);
-  };
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    setExitRotation(Math.random() * 20 - 10);
+  }, [currentCardIndex]);
 
   useEffect(() => {
     if (chatOpen && chatEndRef.current) {
@@ -113,7 +132,7 @@ export default function Room() {
           <p className="font-bold text-lg mb-8 opacity-70">Room Code: {roomId}</p>
           <form onSubmit={handleJoin} className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <label htmlFor="name" className="text-xl font-black uppercase tracking-wider">What's your name?</label>
+              <label htmlFor="name" className="text-xl font-black uppercase tracking-wider">What&apos;s your name?</label>
               <input
                 id="name"
                 type="text"
@@ -239,12 +258,12 @@ export default function Room() {
             ROOM: {roomId || '...'}
             <span className="opacity-0 group-hover:opacity-100 text-xs bg-black text-white px-2 py-1 rounded-full transition-opacity ml-2">COPY LINK</span>
           </div>
-          <button
-            onClick={() => router.push(`/room/${roomId}/games`)}
+          <Link
+            href={`/room/${roomId}/games`}
             className="bg-highlight border-4 border-black text-black px-4 py-2 font-black rounded-lg shadow-brutal hover:translate-y-1 hover:translate-x-1 hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] transition-all uppercase cursor-pointer "
           >
             Minigames
-          </button>
+          </Link>
         </header>
 
         {/* Main Experience */}
@@ -252,9 +271,9 @@ export default function Room() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentCardIndex}
-              initial={{ opacity: 0, x: -100, rotateZ: Math.random() * -10 - 5 }}
+              initial={{ opacity: 0, x: -100, rotateZ: -exitRotation }}
               animate={{ opacity: 1, x: 0, rotateZ: 0 }}
-              exit={{ opacity: 0, x: 100, rotateZ: Math.random() * 10 + 5 }}
+              exit={{ opacity: 0, x: 100, rotateZ: exitRotation }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
@@ -318,7 +337,7 @@ export default function Room() {
             <motion.div
               key={r.id + i}
               initial={{ opacity: 0, y: "100vh", x: `${r.x}vw`, scale: 0.5, rotate: 0 }}
-              animate={{ opacity: 1, y: "-20vh", scale: 2, rotate: Math.random() * 60 - 30 }}
+              animate={{ opacity: 1, y: "-20vh", scale: 2, rotate: 0 }}
               exit={{ opacity: 0, scale: 3 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
               className="absolute bottom-0 text-6xl drop-shadow-[0px_4px_0px_rgba(0,0,0,1)]"
@@ -329,5 +348,16 @@ export default function Room() {
         </AnimatePresence>
       </div>
     </main>
+  );
+}
+
+export default function RoomPage() {
+  const params = useParams();
+  const roomId = params?.id as string;
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <CardContent roomId={roomId} />
+    </Suspense>
   );
 }
