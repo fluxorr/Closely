@@ -1,0 +1,21 @@
+{
+  "name": "Closely - Stay Connected",
+  "short_name": "Closely",
+  "description": "Real-time conversations for couples to get closer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffcf2",
+  "theme_color": "#f29e50",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

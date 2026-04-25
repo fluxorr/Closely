@@ -2,11 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WifiOff, X, Moon, Sun } from "lucide-react";
+import { WifiOff, X, Volume2, VolumeX } from "lucide-react";
 
 type Toast = { id: string; message: string; type: "success" | "error" | "info" };
 type ToastContextType = {
   showToast: (message: string, type?: Toast["type"]) => void;
+  isMuted: boolean;
+  toggleMute: () => void;
+  playSound: (type: "click" | "success" | "error" | "hover") => void;
 };
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -17,21 +20,43 @@ export function useToast() {
   return ctx;
 }
 
+const soundFiles: Record<string, string> = {
+  click: "/sounds/click.mp3",
+  success: "/sounds/success.mp3",
+  error: "/sounds/error.mp3",
+  hover: "/sounds/hover.mp3",
+};
+
+const audioCache: Record<string, HTMLAudioElement> = {};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isOnline, setIsOnline] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (saved) setTheme(saved);
-    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) setTheme("dark");
+    const saved = localStorage.getItem("muted");
+    if (saved) setIsMuted(JSON.parse(saved));
   }, []);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    localStorage.setItem("muted", JSON.stringify(isMuted));
+  }, [isMuted]);
+
+  const toggleMute = useCallback(() => setIsMuted((m) => !m), []);
+
+  const playSound = useCallback((type: "click" | "success" | "error" | "hover") => {
+    if (isMuted) return;
+    const file = soundFiles[type];
+    if (!file) return;
+    try {
+      if (!audioCache[type]) {
+        audioCache[type] = new Audio(file);
+      }
+      audioCache[type].currentTime = 0;
+      audioCache[type].play().catch(() => {});
+    } catch {}
+  }, [isMuted]);
 
   useEffect(() => {
     setIsOnline(navigator.onLine);
@@ -51,7 +76,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
   }, []);
 
-  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const toastColors = {
@@ -61,9 +85,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, isMuted, toggleMute, playSound }}>
       {children}
       
+      {/* Mute button */}
+      <button
+        onClick={toggleMute}
+        className="fixed top-4 left-4 z-50 p-2 bg-white border-4 border-black shadow-brutal-md hover:shadow-brutal-lg hover:-translate-y-1 transition-all"
+        aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+      >
+        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+      </button>
+
       {/* Offline indicator */}
       <AnimatePresence>
         {!isOnline && (
@@ -78,15 +111,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        className="fixed bottom-6 right-6 z-40 p-3 bg-white border-4 border-black shadow-brutal-md hover:shadow-brutal-lg hover:-translate-y-1 transition-all"
-        aria-label="Toggle theme"
-      >
-        {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-      </button>
 
       {/* Toasts */}
       <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-2">

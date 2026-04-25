@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +20,7 @@ const META_IMG = `${META_URL}/og-image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(META_URL),
+  manifest: "/manifest.json",
   title: {
     default: "Closely",
     template: "%s | Closely",
@@ -90,6 +92,7 @@ export default function RootLayout({
 
 <body className="min-h-full flex flex-col">
         <ThemeProvider>
+          <ServiceWorkerRegistration />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{

@@ -9,11 +9,12 @@ import { useToast } from "@/components/ThemeProvider";
 export default function Home() {
   const router = useRouter();
   const [isJoining, setIsJoining] = useState(false);
-  const { showToast } = useToast();
+  const { showToast, playSound } = useToast();
 
   const startRoom = () => {
     if (isJoining) return;
     setIsJoining(true);
+    playSound("click");
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
     setTimeout(() => {
       showToast("Room created!", "success");
