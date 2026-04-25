@@ -4,16 +4,19 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ThemeProvider";
 
 export default function Home() {
   const router = useRouter();
   const [isJoining, setIsJoining] = useState(false);
+  const { showToast } = useToast();
 
   const startRoom = () => {
     if (isJoining) return;
     setIsJoining(true);
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
     setTimeout(() => {
+      showToast("Room created!", "success");
       router.push(`/room/${roomId}`);
     }, 400);
   };

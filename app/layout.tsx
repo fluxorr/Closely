@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next"
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,37 +89,38 @@ export default function RootLayout({
       <Analytics />
 
 <body className="min-h-full flex flex-col">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "Closely",
-              description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
-              url: META_URL,
-              applicationCategory: "SocialNetworking",
-              operatingSystem: "Web Browser",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
-              creator: {
-                "@type": "Organization",
+        <ThemeProvider>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
                 name: "Closely",
-                creator: "Fluxorr",
-              },
-            }),
-          }}
-        />
-
-        {children}</body>
-      <div className="-my-6" >
-        <header className="flex items-center justify-center text-xs font-serif font-semibold" >made with love, for love</header>
-        <header className="flex items-center justify-center text-[10px] font-mono font-light" >-Fluxorr</header>
-      </div>
-
+                description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
+                url: META_URL,
+                applicationCategory: "SocialNetworking",
+                operatingSystem: "Web Browser",
+                offers: {
+                  "@type": "Offer",
+                  price: "0",
+                  priceCurrency: "USD",
+                },
+                creator: {
+                  "@type": "Organization",
+                  name: "Closely",
+                  creator: "Fluxorr",
+                },
+              }),
+            }}
+          />
+          {children}
+        </ThemeProvider>
+        <div className="-my-6">
+          <header className="flex items-center justify-center text-xs font-serif font-semibold">made with love, for love</header>
+          <header className="flex items-center justify-center text-[10px] font-mono font-light">-Fluxorr</header>
+        </div>
+      </body>
     </html>
   );
 }
