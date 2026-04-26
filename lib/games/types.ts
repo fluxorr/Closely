@@ -14,9 +14,17 @@ export interface RPSState {
   winnerId: string | null;
 }
 
+export interface TriviaState {
+  questionIndex: number;
+  p1Answer: string | null;
+  p2Answer: string | null;
+  revealed: boolean;
+}
+
 export interface GameStates {
   ticTacToe: TicTacToeState | null;
   rps: RPSState | null;
+  trivia: TriviaState | null;
   hotPotato: unknown;
   tug: unknown;
   memory: unknown;
@@ -37,6 +45,12 @@ export const DEFAULT_GAMES = (): GameStates => ({
     p2: null,
     status: 'waiting',
     winnerId: null,
+  },
+  trivia: {
+    questionIndex: 0,
+    p1Answer: null,
+    p2Answer: null,
+    revealed: false,
   },
   hotPotato: null,
   tug: null,
