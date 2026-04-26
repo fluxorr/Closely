@@ -3,11 +3,11 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense, lazy, useCallback, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMockSocket } from "../../../../lib/socket";
+import { useSocket } from "@/hooks/useSocket";
 
-const TicTacToeGame = lazy(() => import('./components/TicTacToeGame'));
-const RockPaperScissors = lazy(() => import('./components/RockPaperScissors'));
-const HotPotatoGame = lazy(() => import('./components/HotPotatoGame'));
+const TicTacToeGame = lazy(() => import('@/components/games').then(m => ({ default: m.TicTacToe })));
+const RockPaperScissors = lazy(() => import('@/components/games').then(m => ({ default: m.RockPaperScissors })));
+const HotPotatoGame = lazy(() => import('@/components/games').then(m => ({ default: m.HotPotato })));
 
 function LoadingSkeleton() {
   return (
@@ -42,7 +42,7 @@ function GamesContent() {
     setDeviceId(localStorage.getItem('deviceId') || "");
   }, []);
 
-  const { games, updateGameState, chats, sendChat } = useMockSocket(roomId, userName);
+  const { games, updateGameState, chats, sendChat } = useSocket({ roomId, userName });
 
   const ttt = games?.ticTacToe;
   const rps = games?.rps;
@@ -287,11 +287,11 @@ function GamesContent() {
           </div>
         ) : activeGame === 'TTT' ? (
           <Suspense fallback={<LoadingSkeleton />}>
-            <TicTacToeGame ttt={ttt} playTtt={playTtt} resetTtt={resetTtt} />
+            <TicTacToeGame board={ttt?.board} nextTurn={ttt?.nextTurn} winner={ttt?.winner} winningLine={ttt?.winningLine} onPlay={playTtt} onReset={resetTtt} />
           </Suspense>
         ) : activeGame === 'RPS' ? (
           <Suspense fallback={<LoadingSkeleton />}>
-            <RockPaperScissors rps={rps} deviceId={deviceId} playRps={playRps} resetRps={resetRps} />
+            <RockPaperScissors p1={rps?.p1} p2={rps?.p2} status={rps?.status || 'waiting'} winnerId={rps?.winnerId} deviceId={deviceId} onPlay={playRps} onReset={resetRps} />
           </Suspense>
         ) : activeGame === 'TRIVIA' ? (
           <div className="text-center">

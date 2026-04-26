@@ -3,10 +3,10 @@
 import { useParams } from "next/navigation";
 import { Suspense, useCallback, useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePrefetchGamesData } from "../../../hooks/usePrefetchGamesData";
-import { Card } from "../../../components/Card";
-import { CARDS, type Category } from "../../../lib/cards";
-import { useMockSocket } from "../../../lib/socket";
+import { usePrefetchGamesData } from "@/hooks/usePrefetchGamesData";
+import { Card } from "@/components/flip";
+import { ALL_CARDS as CARDS, type Category } from "@/lib/cards";
+import { useSocket } from "@/hooks/useSocket";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES: { value: Category | 'all'; label: string }[] = [
@@ -47,7 +47,7 @@ function CardContent({ roomId }: { roomId: string }) {
     }
   }, []);
 
-  const { currentCardIndex, sendCardChange, reactions, sendReaction, chats, sendChat } = useMockSocket(roomId, userName);
+  const { currentCardIndex, sendCardChange, reactions, sendReaction, chats, sendChat } = useSocket({ roomId, userName });
 
   usePrefetchGamesData(roomId);
 
