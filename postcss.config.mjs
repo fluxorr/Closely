@@ -1,6 +1,8 @@
+import { fileURLToPath } from 'node:url';
+
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    '@tailwindcss/postcss': { base: fileURLToPath(new URL('.', import.meta.url)) },
   },
 };
 

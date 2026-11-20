@@ -4,6 +4,8 @@ A private room for two. Share conversation cards, lock answers and reveal them t
 
 ## Run locally
 
+Run the commands from the Closely directory with Node.js 24. Version managers such as Vite+ can pick up the version in `.node-version`. With the current Tailwind dependency, Node.js 26 prints a `DEP0205` warning when its PostCSS workers start.
+
 1. Install dependencies with `bun install` or `npm ci`. Both lockfiles are maintained.
 2. Create a PostgreSQL database and apply `src/database/migrations/0001_rooms.sql` with `psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f src/database/migrations/0001_rooms.sql`.
 3. Set `DATABASE_URL` and a random `SESSION_SECRET` of at least 32 characters. Use `openssl rand -hex 32` for a new secret. Keep these values in a local environment file or the shell environment.
