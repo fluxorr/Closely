@@ -11,13 +11,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ably/pubsub-device": "^3.2.0",
+    "@ably/pubsub-server": "^3.2.0",
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@neondatabase/serverless": "^1.2.1",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-slot": "^1.2.4",
     "@vercel/analytics": "^2.0.1",
-    "ably": "^2.30.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.4",
     "framer-motion": "^12.38.0",

@@ -72,9 +72,9 @@ export function useRoom(id: string) {
     if (!usesRealtime) return;
     let disposed = false;
     let close: (() => void) | undefined;
-    void import('ably').then(async ({ Realtime }) => {
+    void import('@ably/pubsub-device').then(async ({ createClient }) => {
       if (disposed) return;
-      const client = new Realtime({ authUrl: `${base}/realtime`, authMethod: 'POST', logLevel: 0 });
+      const client = createClient({ authUrl: `${base}/realtime`, authMethod: 'POST', logLevel: 0 });
       close = () => client.close();
       const channel = client.channels.get(`closely:room:${id}`);
       const attached = () => { if (!disposed) { setLive(true); void refresh(); } };

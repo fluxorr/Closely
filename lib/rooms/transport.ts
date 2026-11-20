@@ -1,13 +1,13 @@
-import * as Ably from 'ably';
+import { createHttpClient, type PubSubHttpClient } from '@ably/pubsub-server';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { database } from '@/src/database/client';
 import { outbox } from '@/src/database/schemas/rooms';
 
-let rest: Ably.Rest | undefined;
+let rest: PubSubHttpClient | undefined;
 function realtime() {
   const key = process.env.ABLY_API_KEY;
   if (!key) return null;
-  return rest ??= new Ably.Rest({ key, queryTime: true, logLevel: 0 });
+  return rest ??= createHttpClient({ key, queryTime: true, logLevel: 0 });
 }
 export const channelName = (id: string) => `closely:room:${id}`;
 export function seatToken(id: string, seat: number) {
