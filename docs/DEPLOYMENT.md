@@ -1,11 +1,26 @@
-# Vercel preview setup
+# Manual setup
 
-The existing Closely project was found on Vercel. Its Preview environment had no configured variables when checked on November 21, 2026.
+Copy `.env.example` to `.env.local` for local testing. The four values belong on the server. Use independently generated session and cron secrets and add the values directly to your environment.
 
-1. Create a dedicated Neon PostgreSQL branch for Preview. Apply `src/database/migrations/0001_rooms.sql` with `psql -v ON_ERROR_STOP=1` against that branch. Use the pooled TLS URL as `DATABASE_URL` in Vercel.
-2. Create or use a dedicated Ably app. Scope its backend API key to `closely:room:*` with publish, subscribe and presence. Set it as `ABLY_API_KEY`. Browsers receive signed token requests scoped to their own channel, with subscribe and presence only. [Ably capability reference](https://ably.com/docs/auth/capabilities)
-3. Add independent random `SESSION_SECRET` and `CRON_SECRET` values in Preview. Rotating the session secret invalidates active guest sessions and invite codes. Set separate values and resources in Production before a production release.
-4. Deploy to a Preview first. Run the Playwright suite against the Preview URL via `CLOSELY_BASE_URL`, using Vercel’s approved preview authentication if needed. Verify both browsers really establish Ably connections. Confirm message delivery, reconnect and version recovery with duplicate or dropped events. Confirm scoped tokens cannot attach to other room channels.
-5. Check the configured Vercel cron and run a maintenance smoke test with expired fixture rooms. The daily schedule is compatible with Vercel’s daily cron tier. Every mutation also schedules outbox dispatch immediately after commit.
+| Variable | Where to get it | When it is needed |
+| --- | --- | --- |
+| `DATABASE_URL` | Neon project **Connect** dialog. Select the test branch, database, and role. Copy the pooled connection URI with its TLS parameters. | Required for rooms, chat, and games. A local PostgreSQL URI also works. [Neon connection guide](https://neon.com/docs/connect/connect-from-any-app) |
+| `SESSION_SECRET` | Run `openssl rand -hex 32` and use the generated value. | Required to sign guest sessions and invites. Keep the same value while testing the same rooms. |
+| `ABLY_API_KEY` | Open an Ably app’s **API Keys** tab. Create a key scoped to channel resource `closely:room:*` with `publish`, `subscribe`, and `presence`. Copy the full key, including the part after the colon. | Required for Ably events and presence. When it is empty, rooms still work through polling. [Ably key capabilities](https://ably.com/docs/auth/capabilities) |
+| `CRON_SECRET` | Run `openssl rand -hex 32` again and use the new value. | Required for automated cleanup and outbox retries in production. Optional for gameplay testing. [Vercel Cron security](https://vercel.com/docs/schedules/cron-jobs/manage-cron-jobs#securing-cron-jobs) |
 
-Rooms remain playable through authenticated snapshots when Ably cannot connect. The primary validation of database persistence was on an isolated local PostgreSQL instance. Production Neon, Ably and Vercel execution needs the preview environment above.
+## Local test
+
+1. Run [`0001_rooms.sql`](../src/database/migrations/0001_rooms.sql) once against the test database before creating a room. In Neon, select that branch and database in the SQL Editor, paste the migration, and run it. If you prefer `psql`, use the direct connection URI in your shell variable `NEON_DIRECT_URL` and run `psql -v ON_ERROR_STOP=1 "$NEON_DIRECT_URL" -f src/database/migrations/0001_rooms.sql`.
+2. From the Closely folder, run `bun install` and `bun run dev`. Open the URL printed by Next.js.
+3. Create a room in a regular browser window. Use its invite link in a private window or a different browser profile, and join with a different name. Check a shared card flip, private-answer reveal, chat, a game, and refreshing one player partway through.
+4. To confirm Ably is active, look for a successful `POST /api/rooms/<id>/realtime` followed by a live Ably WebSocket connection in the browser’s Network panel. The page can still sync via polling even if that connection fails.
+
+## Vercel preview and production
+
+1. In the Closely project, open **Settings → Environment Variables**. Add `DATABASE_URL`, `SESSION_SECRET`, and `ABLY_API_KEY` to **Preview** and use a dedicated Neon test branch. Apply the migration to that database once. Add `CRON_SECRET` there if you plan to call the maintenance endpoint manually.
+2. Redeploy the preview after adding the values, then repeat the two-browser test. Vercel applies environment changes to new deployments. [Vercel environment variables](https://vercel.com/docs/environment-variables)
+3. For a production release, create separate production values and apply the migration to the production database. Test the preview before promoting the release.
+4. Verify the daily cron configured in `vercel.json` in the production deployment logs. Vercel runs scheduled jobs in production and sends `CRON_SECRET` as the bearer token. [Vercel Cron troubleshooting](https://vercel.com/docs/schedules/cron-jobs/manage-cron-jobs#troubleshooting-cron-jobs)
+
+Rotating `SESSION_SECRET` invalidates existing guest sessions and invite codes for that environment.
