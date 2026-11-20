@@ -1,0 +1,312 @@
+{
+  "assets": [
+    {
+      "id": "world",
+      "file": "public/assets/illustrations/world.webp",
+      "bytes": 191358,
+      "usage": "Landing hero",
+      "source": "generated",
+      "dimensions": [
+        1520,
+        1013
+      ],
+      "status": "reviewed",
+      "alt": "A paper note travels between two glowing rooms at twilight.",
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "9c2e2196-4abe-41c3-9967-db5ef8669944"
+    },
+    {
+      "id": "notes",
+      "file": "public/assets/illustrations/notes.webp",
+      "bytes": 84712,
+      "usage": "Card sample, invitation, closing, error and loading",
+      "source": "generated",
+      "dimensions": [
+        940,
+        705
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "1ed9b03f-aafb-48ff-b23c-ceaecc26cceb"
+    },
+    {
+      "id": "same",
+      "file": "public/assets/games/same.webp",
+      "bytes": 75080,
+      "usage": "Same Brain cover and results",
+      "source": "generated",
+      "dimensions": [
+        900,
+        600
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "eb8621d5-9dec-42d8-b9d9-79af495ef23d"
+    },
+    {
+      "id": "bluff",
+      "file": "public/assets/games/bluff.webp",
+      "bytes": 100530,
+      "usage": "Bluff My Love cover and results",
+      "source": "generated",
+      "dimensions": [
+        900,
+        600
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "cb53058e-18d8-421a-8235-2ab145e845d8"
+    },
+    {
+      "id": "draw",
+      "file": "public/assets/games/draw.webp",
+      "bytes": 118048,
+      "usage": "Draw Me Wrong cover and results",
+      "source": "generated",
+      "dimensions": [
+        900,
+        600
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "1929cec7-92c1-40f4-91c9-5f30b37155c6"
+    },
+    {
+      "id": "ttt",
+      "file": "public/assets/games/ttt.svg",
+      "bytes": 622,
+      "usage": "Tic-Tac-Toe cover",
+      "source": "authored",
+      "dimensions": [
+        320,
+        180
+      ],
+      "status": "reviewed",
+      "decorative": true
+    },
+    {
+      "id": "rps",
+      "file": "public/assets/games/rps.svg",
+      "bytes": 674,
+      "usage": "Rock Paper Scissors cover",
+      "source": "authored",
+      "dimensions": [
+        320,
+        180
+      ],
+      "status": "reviewed",
+      "decorative": true
+    },
+    {
+      "id": "potato",
+      "file": "public/assets/games/potato.svg",
+      "bytes": 607,
+      "usage": "Hot Potato cover and stage",
+      "source": "authored",
+      "dimensions": [
+        320,
+        180
+      ],
+      "status": "reviewed",
+      "decorative": true
+    },
+    {
+      "id": "mark",
+      "file": "public/brand/closely-mark.svg",
+      "bytes": 642,
+      "usage": "Primary ghost-C mark",
+      "source": "authored",
+      "dimensions": [
+        64,
+        64
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "mono",
+      "file": "public/brand/closely-mark-mono.svg",
+      "bytes": 448,
+      "usage": "Monochrome mark",
+      "source": "authored",
+      "dimensions": [
+        64,
+        64
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "inverted",
+      "file": "public/brand/closely-mark-inverted.svg",
+      "bytes": 448,
+      "usage": "Inverted mark",
+      "source": "authored",
+      "dimensions": [
+        64,
+        64
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "wordmark",
+      "file": "public/brand/closely-wordmark.svg",
+      "bytes": 1005,
+      "usage": "Site navigation",
+      "source": "authored",
+      "dimensions": [
+        207,
+        64
+      ],
+      "status": "reviewed",
+      "alt": "Closely",
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "icon",
+      "file": "app/icon.svg",
+      "bytes": 642,
+      "usage": "Browser app icon",
+      "source": "authored",
+      "dimensions": [
+        64,
+        64
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "favicon",
+      "file": "app/favicon.ico",
+      "bytes": 32038,
+      "usage": "Browser tab",
+      "source": "authored",
+      "dimensions": [
+        64,
+        64
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "apple",
+      "file": "public/apple-touch-icon.png",
+      "bytes": 12685,
+      "usage": "Apple Touch icon",
+      "source": "authored",
+      "dimensions": [
+        180,
+        180
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "pwa-192",
+      "file": "public/pwa-192.png",
+      "bytes": 13114,
+      "usage": "Install icon",
+      "source": "authored",
+      "dimensions": [
+        192,
+        192
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "pwa-512",
+      "file": "public/pwa-512.png",
+      "bytes": 36801,
+      "usage": "Install icon",
+      "source": "authored",
+      "dimensions": [
+        512,
+        512
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "pwa-maskable",
+      "file": "public/pwa-maskable.png",
+      "bytes": 27726,
+      "usage": "Maskable install icon",
+      "source": "authored",
+      "dimensions": [
+        512,
+        512
+      ],
+      "status": "reviewed",
+      "decorative": true,
+      "origin": "Vector adaptation of the user-supplied Cuddling Ghost C icon"
+    },
+    {
+      "id": "og",
+      "file": "public/og-closely.png",
+      "bytes": 571157,
+      "usage": "Social share image",
+      "source": "authored",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "status": "reviewed",
+      "alt": "Closely. A little world for just us.",
+      "derivedFrom": [
+        "world",
+        "mark"
+      ]
+    },
+    {
+      "id": "waiting",
+      "file": "public/assets/illustrations/waiting.webp",
+      "usage": "Waiting seat and closing invitation",
+      "source": "generated",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "promptFile": "docs/asset-prompts/paper-world.md",
+      "generatedOn": "2026-11-21",
+      "masterId": "1cbe5256-3372-4aa5-a3e4-38e1de6d5dc0",
+      "status": "reviewed",
+      "bytes": 89384,
+      "dimensions": [
+        1000,
+        667
+      ]
+    },
+    {
+      "id": "sparkle-trio",
+      "file": "stick-it-up@0.4.0/SparkleTrioSticker",
+      "usage": "Waiting and round celebration",
+      "source": "licensed",
+      "decorative": true,
+      "licence": "MIT",
+      "licenseFile": "docs/licenses/STICK-IT-UP.txt",
+      "status": "reviewed"
+    }
+  ]
+}
