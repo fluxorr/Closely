@@ -206,7 +206,7 @@ svg { flex-shrink: 0; }
 .table-card { position: relative; display: grid; width: min(100%, 565px); margin-inline: auto; min-height: clamp(252px,35vw,340px); perspective: 1100px; }
 .table-card::before, .table-card::after { position: absolute; inset: 5px 4px -4px; content: ''; z-index: -1; border: 1px solid var(--line-strong); border-radius: var(--r-card); background: var(--rose); transform: rotate(-4deg); }
 .table-card::after { transform: rotate(3deg); background: #fbf4ea; }
-.table-sheet { grid-area: 1/1; display: grid; position: relative; align-content: center; justify-items: center; gap: 16px; text-align: center; background: var(--surface); padding: clamp(17px,5vw,40px); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); backface-visibility: hidden; transition: transform 540ms cubic-bezier(.22,.65,.27,1); }
+.table-sheet { grid-area: 1/1; display: grid; position: relative; align-content: center; justify-items: center; gap: 16px; text-align: center; background: var(--surface); padding: clamp(17px,5vw,40px); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); backface-visibility: hidden; transition: transform 440ms cubic-bezier(.22,.65,.27,1); }
 .table-sheet h2 { font-size: clamp(1.57rem,4vw,2.9rem); line-height: 1.14; overflow-wrap: anywhere; }
 .table-back { background: linear-gradient(150deg,var(--surface),#fbf4ea); }
 .table-front { transform: rotateY(180deg); }

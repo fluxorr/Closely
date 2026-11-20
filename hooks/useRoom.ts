@@ -2,23 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RoomAction } from '@/lib/rooms/actions';
-import type { RoomView } from '@/lib/rooms/state';
+import { clearRoomHandoff, initialRoom, type RoomSnapshot } from './roomHandoff';
 
-type Snapshot = RoomView & { realtime: boolean };
 type Status = 'loading' | 'join' | 'ready' | 'expired' | 'invalid' | 'offline';
 const retryable = new Set(['ready', 'answer', 'card-answer', 'choice', 'stroke', 'drawing-guess']);
 export function useRoom(id: string) {
   const base = `/api/rooms/${encodeURIComponent(id)}`;
-  const [view, setView] = useState<Snapshot | null>(null);
-  const [status, setStatus] = useState<Status>('loading');
+  const [view, setView] = useState(() => initialRoom(id));
+  const [status, setStatus] = useState<Status>(view ? 'ready' : 'loading');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [live, setLive] = useState(false);
-  const current = useRef<Snapshot | null>(null);
+  const current = useRef(view);
   const actionLock = useRef(false);
   const readLock = useRef(false);
-  const readAgain = useRef(false);
-  const commit = useCallback((snap: Snapshot) => {
+  const pendingVersion = useRef(-1);
+  const commit = useCallback((snap: RoomSnapshot) => {
     const old = current.current;
     if (!old || snap.version > old.version || snap.version === old.version && snap.now >= old.now) {
       current.current = snap;
@@ -26,33 +25,45 @@ export function useRoom(id: string) {
     }
     setStatus('ready');
   }, []);
-  const refresh = useCallback(async () => {
-    if (readLock.current) { readAgain.current = true; return; }
+  const refresh = useCallback(async (version = -1) => {
+    if (version >= 0 && version <= (current.current?.version ?? -1)) return;
+    if (readLock.current) {
+      pendingVersion.current = Math.max(pendingVersion.current, version);
+      return;
+    }
     readLock.current = true;
     try {
       do {
-        readAgain.current = false;
-        const res = await fetch(base, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
-        if (res.ok) commit(await res.json());
-        else if (res.status === 401) setStatus('join');
-        else if (res.status === 410) setStatus('expired');
-        else if (res.status === 404) setStatus('invalid');
-        else setStatus('offline');
-      } while (readAgain.current);
-    } catch { setStatus('offline'); }
+        pendingVersion.current = -1;
+        const previous = current.current;
+        try {
+          const res = await fetch(base, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+          if (res.ok) commit(await res.json());
+          else if (current.current === previous) {
+            if (res.status === 401) setStatus('join');
+            else if (res.status === 410) setStatus('expired');
+            else if (res.status === 404) setStatus('invalid');
+            else setStatus('offline');
+          }
+        } catch { if (current.current === previous) setStatus('offline'); }
+      } while (pendingVersion.current > (current.current?.version ?? -1));
+    }
     finally { readLock.current = false; }
   }, [base, commit]);
   const hasSeat = Boolean(view);
   const usesRealtime = view?.realtime;
   useEffect(() => {
+    clearRoomHandoff(id);
+    if (!current.current) void refresh();
+  }, [id, refresh]);
+  useEffect(() => {
+    if (status !== 'loading' && status !== 'offline' && status !== 'ready') return;
     const kick = () => { if (document.visibilityState === 'visible') void refresh(); };
-    const first = window.setTimeout(kick, 0);
-    if (!hasSeat && status !== 'loading' && status !== 'offline') return () => clearTimeout(first);
-    const timer = window.setInterval(kick, live ? 5500 : 1050);
+    const timer = window.setInterval(kick, live ? 5500 : hasSeat ? 750 : 1050);
     window.addEventListener('online', kick);
     document.addEventListener('visibilitychange', kick);
     return () => {
-      clearInterval(timer); clearTimeout(first);
+      clearInterval(timer);
       window.removeEventListener('online', kick);
       document.removeEventListener('visibilitychange', kick);
     };
@@ -66,9 +77,14 @@ export function useRoom(id: string) {
       const client = new Realtime({ authUrl: `${base}/realtime`, authMethod: 'POST', logLevel: 0 });
       close = () => client.close();
       const channel = client.channels.get(`closely:room:${id}`);
-      client.connection.on('connected', () => { setLive(true); void refresh(); });
+      const attached = () => { if (!disposed) { setLive(true); void refresh(); } };
+      channel.on('attached', attached);
+      channel.on(['detached','suspended','failed'], () => { if (!disposed) setLive(false); });
+      client.connection.on('connected', () => { if (channel.state === 'attached') attached(); });
       client.connection.on(['disconnected','suspended','failed','closed'], () => { if (!disposed) setLive(false); });
-      await channel.subscribe('version', () => { if (!disposed) void refresh(); });
+      await channel.subscribe('version', message => {
+        if (!disposed) void refresh(typeof message.data?.version === 'number' ? message.data.version : undefined);
+      });
       if (!disposed) await channel.presence.enter();
     }).catch(() => { if (!disposed) setLive(false); });
     return () => { disposed = true; close?.(); };
@@ -93,7 +109,7 @@ export function useRoom(id: string) {
       let result;
       try { result = await transmit(original.version); }
       catch { result = await transmit(original.version); }
-      const newer: Snapshot | undefined = result.data.view;
+      const newer: RoomSnapshot | undefined = result.data.view;
       if (result.status === 409 && newer && retryable.has(action.type) && newer.sessionId === original.sessionId && (newer.game?.phase === original.game?.phase || action.type === 'ready' && original.game?.phase === 'lobby' && newer.game?.phase === 'ready') && newer.card?.phase === original.card?.phase) {
         commit(newer);
         result = await transmit(newer.version);
@@ -106,5 +122,5 @@ export function useRoom(id: string) {
     } catch { setError('The connection dropped. Try again once it’s back.'); return false; }
     finally { actionLock.current = false; setPending(false); }
   }, [base, commit]);
-  return { view, status, error, send, refresh, pending };
+  return { view, status, error, send, refresh, pending, commit };
 }

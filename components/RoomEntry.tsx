@@ -4,6 +4,7 @@ import { ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { XIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { handOffRoom, type RoomSnapshot } from '@/hooks/roomHandoff';
 
 export function AvatarChoice({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return <fieldset className="avatar-choices"><legend>Choose your color</legend>
@@ -23,7 +24,7 @@ function inviteInput(code: string) {
   } catch { /* The inline error covers invalid invite formats. */ }
   return null;
 }
-export function EntryForm({ kind, roomId, onJoined }: { kind: 'create' | 'join'; roomId?: string; onJoined?: () => void }) {
+export function EntryForm({ kind, roomId, onJoined }: { kind: 'create' | 'join'; roomId?: string; onJoined?: (view: RoomSnapshot) => void }) {
   const router = useRouter();
   const [avatar, setAvatar] = useState(kind === 'create' ? 0 : 1);
   const [pending, setPending] = useState(false);
@@ -41,8 +42,11 @@ export function EntryForm({ kind, roomId, onJoined }: { kind: 'create' | 'join';
       const res = await fetch(kind === 'create' ? '/api/rooms' : '/api/rooms/join', { method: 'POST', body: JSON.stringify({ name, avatar, ...(kind === 'join' ? invite : {}) }), headers: { 'Content-Type': 'application/json' } });
       const result = await res.json();
       if (!res.ok) { setError(result.error ?? 'The room couldn’t open. Try again.'); return; }
-      if (onJoined) onJoined();
-      else router.push(`/room/${result.id}`);
+      if (onJoined) onJoined(result.view);
+      else {
+        handOffRoom(result.view);
+        router.push(`/room/${result.id}`);
+      }
     } catch { setError('The room couldn’t open. Check your connection and try again.'); }
     finally { setPending(false); }
   }

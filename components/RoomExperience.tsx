@@ -100,13 +100,13 @@ function RoomHub({ view, send, disabled }: { view: RoomView; send: SendAction; d
   </>;
 }
 export function RoomExperience({ id }: { id: string }) {
-  const { view, status, error, pending, send, refresh } = useRoom(id);
+  const { view, status, error, pending, send, refresh, commit } = useRoom(id);
   const dialog = useRef<HTMLDialogElement>(null);
   const partner = view?.players[view.seat === 0 ? 1 : 0];
   const disabled = pending || status !== 'ready';
   if (!view || ['join','expired','invalid'].includes(status)) return <main className="entry-screen wrap" id="main-content"><Brand />
     <section className="entry-panel"><Image src="/assets/illustrations/notes.webp" alt="" width={520} height={347} preload /><div>
-      {status === 'loading' ? <><h1>Opening the room…</h1><div className="loading-line" aria-hidden /></> : status === 'join' ? <><h1>A little room for two.</h1><p>Pick a name your partner will recognize.</p><EntryForm kind="join" roomId={id} onJoined={() => { window.history.replaceState(null, '', window.location.pathname); void refresh(); }} /></> : <>
+      {status === 'loading' ? <><h1>Opening the room…</h1><div className="loading-line" aria-hidden /></> : status === 'join' ? <><h1>A little room for two.</h1><p>Pick a name your partner will recognize.</p><EntryForm kind="join" roomId={id} onJoined={snapshot => { window.history.replaceState(null, '', window.location.pathname); commit(snapshot); }} /></> : <>
         <h1>{status === 'expired' ? 'This room has expired.' : status === 'invalid' ? 'That invite looks off.' : 'The room couldn’t connect.'}</h1><p>{status === 'offline' ? 'Check your connection and try the room again.' : 'Ask your person for a fresh invite, or make a room at home.'}</p>
         {status === 'offline' ? <button className="button primary" onClick={() => void refresh()}>Try again</button> : <Link className="button primary" href="/">Back to Closely</Link>}
       </>}
