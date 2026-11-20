@@ -4,12 +4,12 @@ A private room for two. Share conversation cards, lock answers and reveal them t
 
 ## Run locally
 
-Run the commands from the Closely directory with Node.js 24. Version managers such as Vite+ can pick up the version in `.node-version`. With the current Tailwind dependency, Node.js 26 prints a `DEP0205` warning when its PostCSS workers start.
+Run the commands from the Closely directory. The Bun workflow is `bun install` followed by `bun run dev`. Local development uses Webpack to avoid the Turbopack compiler retry loop seen with Next.js 16.2.4. Version managers such as Vite+ can pick up `.node-version` for commands that use Node.js.
 
 1. Install dependencies with `bun install` or `npm ci`. Both lockfiles are maintained.
 2. Create a PostgreSQL database and apply `src/database/migrations/0001_rooms.sql` with `psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f src/database/migrations/0001_rooms.sql`.
 3. Set `DATABASE_URL` and a random `SESSION_SECRET` of at least 32 characters. Use `openssl rand -hex 32` for a new secret. Keep these values in a local environment file or the shell environment.
-4. Start with `npm run dev`. For production-mode QA, run `npm run build` and `npm run start -- --port 3091`.
+4. Start with `bun run dev` or `npm run dev`. For production-mode QA, run `bun run build` and `bun run start --port 3091`.
 
 Ably provides scoped room notifications and presence. Without `ABLY_API_KEY` the application uses authenticated snapshot polling, which is enough for local browser tests. Set `CRON_SECRET` to enable the scheduled expiry cleanup and outbox retry route.
 
