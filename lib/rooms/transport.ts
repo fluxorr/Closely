@@ -13,13 +13,16 @@ export const channelName = (id: string) => `closely:room:${id}`;
 export function seatToken(id: string, seat: number) {
   return realtime()?.auth.createTokenRequest({ clientId: `${id}:${seat}`, ttl: 20 * 60 * 1000, capability: { [channelName(id)]: ['subscribe', 'presence'] } });
 }
-export async function dispatch(id?: string) {
+export async function publishVersion(id: string, version: number) {
   const transport = realtime();
   if (!transport) return;
-  const db = database();
-  const pending = await db.select().from(outbox).where(and(isNull(outbox.sent), id ? eq(outbox.room, id) : undefined)).orderBy(asc(outbox.created)).limit(id ? 8 : 50);
-  await Promise.allSettled(pending.map(async event => {
-    await transport.channels.get(channelName(event.room)).publish({ name: 'version', id: `${event.room}:${event.version}:0`, data: { version: event.version } });
-    await db.update(outbox).set({ sent: Date.now() }).where(and(eq(outbox.room, event.room), eq(outbox.version, event.version)));
-  }));
+  await transport.channels.get(channelName(id)).publish({ name: 'version', id: `${id}:${version}:0`, data: { version } });
+  await database().update(outbox).set({ sent: Date.now() }).where(and(eq(outbox.room, id), eq(outbox.version, version)));
+}
+
+export async function dispatch() {
+  if (!realtime()) return;
+  const pending = await database().select({ room: outbox.room, version: outbox.version }).from(outbox)
+    .where(isNull(outbox.sent)).orderBy(asc(outbox.created)).limit(50);
+  await Promise.allSettled(pending.map(event => publishVersion(event.room, event.version)));
 }
