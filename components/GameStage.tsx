@@ -54,7 +54,7 @@ function ActiveGame({ game, view, send, disabled, now }: { game: GameView; view:
   }
 }
 function Board({ game, send, disabled }: { game: GameView; send: SendAction; disabled: boolean }) {
-  return <div className="ttt-board" aria-label="Tic-Tac-Toe board">{game.board.map((cell,i) => <button className={game.winningLine?.includes(i) ? 'winning' : ''} key={i} aria-label={`Cell ${i + 1}${cell === null ? ', empty' : cell === 0 ? ', X' : ', O'}`} disabled={disabled || cell !== null} onClick={() => void send({ type: 'move', cell: i })}>{cell === 0 ? '×' : cell === 1 ? '○' : ''}</button>)}</div>;
+  return <div className="ttt-board" role="group" aria-label="Tic-Tac-Toe board">{game.board.map((cell,i) => <button className={game.winningLine?.includes(i) ? 'winning' : ''} key={i} aria-label={`Cell ${i + 1}${cell === null ? ', empty' : cell === 0 ? ', X' : ', O'}`} disabled={disabled || cell !== null} onClick={() => void send({ type: 'move', cell: i })}>{cell === 0 ? '×' : cell === 1 ? '○' : ''}</button>)}</div>;
 }
 
 export default function GameStage({ view, send, disabled }: { view: RoomView; send: SendAction; disabled: boolean }) {

@@ -29,7 +29,7 @@ export default function Home() {
           <div className="actions"><EntryButton kind="create">Create a room <ArrowUpRight size={17} aria-hidden /></EntryButton><EntryButton kind="join" className="button secondary" /></div>
           <p className="hero-foot">Two people, one private room. Just bring your person.</p>
         </div>
-        <figure className="hero-art"><Image src="/assets/illustrations/world.webp" fill sizes="(max-width: 760px) 94vw, (max-width: 1200px) 55vw, 680px" alt="A paper note travels between two glowing rooms at twilight." preload /><figcaption>Made for wherever you both are.</figcaption></figure>
+        <figure className="hero-art"><Image src="/assets/illustrations/world.webp" fill sizes="(max-width: 760px) 94vw, (max-width: 1200px) 55vw, 680px" alt="A paper note travels between two glowing rooms at twilight." preload /></figure>
       </section>
       <div className="section-divider"><a href="#cards" aria-label="Explore conversation cards"><ArrowDown size={16} aria-hidden /></a></div>
       <section id="cards" className="card-feature" aria-labelledby="cards-title">

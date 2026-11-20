@@ -18,10 +18,10 @@ const GameStage = dynamic(() => import('./GameStage'), { loading: () => <div cla
 
 function initial(name: string) { return Array.from(name)[0]?.toLocaleUpperCase() ?? '?'; }
 function PlayerSeats({ view }: { view: RoomView }) {
-  return <div className="seats" aria-label="Room seats">
+  return <div className="seats" role="group" aria-label="Room seats">
     {view.players.map((p,i) => <div className={`player${p ? '' : ' player-empty'}`} key={i}>
       <span className={`avatar avatar-${p?.avatar ?? 1}`} aria-hidden>{p ? initial(p.name) : '◡'}</span>
-      <div><strong>{p ? p.name : 'Open seat'}</strong><small>{p ? i === view.seat ? 'You' : p.online ? 'Here with you' : 'Away for now' : 'Waiting for your person'}</small></div>
+      <div><strong>{p ? p.name : 'Open seat'}</strong><small>{p ? i === view.seat ? 'You' : p.online ? 'Here with you' : 'Away for now' : 'Invite partner'}</small></div>
     </div>)}
   </div>;
 }
@@ -86,7 +86,7 @@ function RoomHub({ view, send, disabled }: { view: RoomView; send: SendAction; d
   return <>
     {waiting ? <section className="waiting-scene" aria-labelledby="waiting-title"><div><p className="eyebrow"><HeartHandshake size={17} aria-hidden /> Your room is ready</p><h1 id="waiting-title">A seat for your person.</h1><p>Send the invite and pick what you’d like to play while you wait.</p><Invite view={view} /></div><figure><Image src="/assets/illustrations/waiting.webp" fill sizes="(max-width: 760px) 90vw, 450px" alt="" /><StickerAccent className="invite-sticker" /></figure></section> : <section className="room-welcome"><div><p className="eyebrow"><HeartHandshake size={16} aria-hidden /> Your room</p><h1>Here together.</h1></div><Invite view={view} /></section>}
     <div className="hub-feature"><div><p className="eyebrow">Conversation cards</p><h2>Take a seat at the card table.</h2><p>Tell a story, get curious, or write your answers and turn them over together.</p>
-      <div className="segmented" aria-label="Card mode"><button aria-pressed={mode === 'talk'} onClick={() => setMode('talk')}>Talk Together</button><button aria-pressed={mode === 'reveal'} onClick={() => setMode('reveal')}>Answer &amp; Reveal</button></div>
+      <div className="segmented" role="group" aria-label="Card mode"><button aria-pressed={mode === 'talk'} onClick={() => setMode('talk')}>Talk Together</button><button aria-pressed={mode === 'reveal'} onClick={() => setMode('reveal')}>Answer &amp; Reveal</button></div>
       <CategoryPicker mode={mode} disabled={disabled || waiting} onSelect={category => void send({ type: 'cards', category, mode })} />
     </div><div className="hub-art"><Image src="/assets/illustrations/notes.webp" alt="" fill sizes="(max-width: 760px) 90vw, 440px" /></div></div>
     <Library view={view} send={send} disabled={disabled} />

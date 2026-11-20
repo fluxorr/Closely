@@ -16,7 +16,7 @@ const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 export const other = (seat: Seat): Seat => seat === 0 ? 1 : 0;
 const actor = (g: Match): Seat => ((g.round + g.seed) % 2) as Seat;
 const promptIndex = (g: Match, length: number) => (g.seed + g.round) % length;
-const instruction = (g: Match) => ((Math.floor(g.round / 2) + g.round + Math.floor(g.seed / 2)) % 2 === 0 ? 'truth' : 'invent');
+const instruction = (g: Match): 'truth' | 'invent' => ((Math.floor(g.round / 2) + g.round + Math.floor(g.seed / 2)) % 2 === 0 ? 'truth' : 'invent');
 export const normalize = (value: string) => value.trim().normalize('NFKC').replace(/\s+/gu, ' ').toLowerCase();
 
 export interface Match {

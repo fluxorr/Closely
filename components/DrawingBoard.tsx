@@ -114,7 +114,7 @@ export function DrawingBoard({ drawing, editable, send, disabled }: { drawing: S
   };
   return <div className="drawing-board">
     <canvas ref={board} className={editable ? 'drawable' : ''} aria-label={editable ? 'Drawing canvas. Use your finger, mouse, or pen to sketch the secret prompt.' : 'Your partner’s drawing canvas'} onPointerDown={down} onPointerMove={move} onPointerUp={finish} onLostPointerCapture={finish} onPointerCancel={finish} />
-    {editable && <div className="drawing-tools" aria-label="Drawing tools">
+    {editable && <div className="drawing-tools" role="group" aria-label="Drawing tools">
       <button className="icon-button" title="Brush" aria-label="Brush" aria-pressed={!erase} onClick={() => setErase(false)}><Brush size={18} aria-hidden /></button>
       <button className="icon-button" title="Eraser" aria-label="Eraser" aria-pressed={erase} onClick={() => setErase(true)}><Eraser size={18} aria-hidden /></button>
       {inkColors.map(color => <button key={color} className={`icon-button pen pen-${color}`} aria-label={`${color} ink`} aria-pressed={ink === color && !erase} onClick={() => { setInk(color); setErase(false); }}><span aria-hidden /></button>)}

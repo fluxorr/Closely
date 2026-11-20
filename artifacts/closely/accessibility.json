@@ -1,0 +1,63 @@
+{
+  "tool": "axe-core",
+  "separateChromeProcesses": true,
+  "results": [
+    {
+      "name": "Desktop landing",
+      "passes": 23,
+      "incomplete": [
+        "color-contrast"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Create room dialog",
+      "passes": 14,
+      "incomplete": [
+        "color-contrast"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Waiting room",
+      "passes": 21,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Mobile invite",
+      "passes": 23,
+      "incomplete": [
+        "color-contrast"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Paired lobby",
+      "passes": 21,
+      "incomplete": [
+        "aria-prohibited-attr"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Mobile card table",
+      "passes": 21,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast",
+        "label-content-name-mismatch"
+      ],
+      "violations": []
+    },
+    {
+      "name": "Mobile chat drawer",
+      "passes": 18,
+      "incomplete": [],
+      "violations": []
+    }
+  ]
+}

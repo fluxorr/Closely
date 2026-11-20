@@ -61,7 +61,6 @@ svg { flex-shrink: 0; }
 .hero-foot { margin-top: 15px; font-size: .84rem; color: var(--muted); }
 .hero-art { margin: 0; position: relative; isolation: isolate; aspect-ratio: 1.48; border-radius: var(--r-frame); overflow: hidden; background: var(--plum); box-shadow: var(--shadow); border: 1px solid rgb(41 40 39 / 12%); }
 .hero-art img { object-fit: cover; }
-.hero-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 38px 16px 13px; color: var(--surface); font-size: .76rem; text-align: center; background: linear-gradient(transparent, rgb(43 26 44 / 74%)); }
 .section-divider { height: 1px; background: var(--line); display: flex; justify-content: center; align-items: center; }
 .section-divider a { width: 44px; height: 44px; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 50%; }
 .section-divider a:hover { border-color: var(--rose-ink); }
@@ -299,3 +298,4 @@ svg { flex-shrink: 0; }
 .privacy-paper { margin: 32px auto; max-width: 680px; padding: clamp(18px,5vw,40px); background: var(--surface); border-radius: var(--r-card); border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 18px; justify-items: start; }
 .privacy-paper h1 { font-size: clamp(2.7rem,6vw,4rem); }
 .round-reveal:has(.result-sticker) h2 { padding-right: 65px; }
+@media (prefers-reduced-motion: reduce) { .reaction-float { animation: none !important; } }

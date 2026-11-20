@@ -32,3 +32,5 @@ Baseline deck count is 450 unique IDs across seven source categories, including 
 Room actions share one endpoint so activity arbitration, versioning, the idempotency receipt and related side effects use the same transaction. Private projections omit internal state and secret prompt seed. Realtime events carry only a version. PostgreSQL retains complete strokes and periodic chunks of longer strokes, rather than pointer events. Presence messages enter the scoped Ably channel while the room uses server-recorded heartbeats to recover connection status during transport interruptions.
 
 The migrated Random deck includes the original 30 game prompts. Random keeps Spicy and Naughty behind explicit selection, and uses the same per-category used IDs as direct deck selection. Skipping or passing a private card discards its sealed answer immediately.
+
+The old game menu exposed Couple Trivia and Never Have I Ever as coming-soon panels. These panels are omitted from the new catalogue. The existing unmounted Trivia source and its prompts are preserved.
