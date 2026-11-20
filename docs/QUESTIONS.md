@@ -3,6 +3,8 @@
 1. Run [`0002_questions.sql`](../src/database/migrations/0002_questions.sql) once in the Neon SQL Editor for your app’s database. On a fresh database, run [`0001_rooms.sql`](../src/database/migrations/0001_rooms.sql) first.
 2. Open **Tables → closely_questions** and insert a row for each question. Enter your own text and leave `id` to its default.
 
+To populate another database with the conversation decks, run the [card import](../src/database/seeds/0001_conversation_cards.sql) after the migrations. It adds 50 cards to each deck and can be rerun safely. Deep, Fun, and Memory cards are eligible for Answer & Reveal. If the database has no active homepage preview, the import selects one Fun card.
+
 | Field | What to enter |
 | --- | --- |
 | `kind` | `card` for conversation decks, `same` for Same Brain, `bluff` for Bluff My Love, or `draw` for Draw Me Wrong. |
