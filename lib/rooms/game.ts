@@ -1,21 +1,15 @@
 import type { RoomAction, Stroke } from './actions';
 import type { GameId } from './catalog';
+import type { GameQuestion } from './questions';
 
 export type Seat = 0 | 1;
 type Pair<T> = [T, T];
 type Phase = 'lobby' | 'ready' | 'countdown' | 'playing' | 'resolving' | 'results' | 'rematch';
-const rounds = { same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
+export const roundLimits = { same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
 const times = { same: 15, bluff: 50, draw: 75, ttt: 120, rps: 30, potato: 14 } satisfies Record<GameId, number>;
-const prompts = {
-  same: ['Name a snack you would share at midnight.', 'What animal would make the funniest roommate?', 'Where would we go on a rainy afternoon?', 'Name a food that tastes best cold.', 'What color feels most like a Sunday?', 'Pick a movie-night drink.'],
-  bluff: ['Tell me about a costume you regretted wearing.', 'What is the strangest thing you have found in your pocket?', 'Describe a time you got completely lost.', 'Tell me about a cooking disaster.', 'What made you laugh at the worst possible moment?', 'Describe a very odd thing you once collected.'],
-  draw: ['A duck on roller skates', 'A cat eating spaghetti', 'A cactus in a bathtub', 'A frog riding a bicycle', 'A whale wearing a hat', 'A snail carrying an umbrella'],
-};
-const drawingAnswers = [ ['duck','roller skates'], ['cat','spaghetti'], ['cactus','bathtub'], ['frog','bicycle'], ['whale','hat'], ['snail','umbrella'] ];
 const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 export const other = (seat: Seat): Seat => seat === 0 ? 1 : 0;
 const actor = (g: Match): Seat => ((g.round + g.seed) % 2) as Seat;
-const promptIndex = (g: Match, length: number) => (g.seed + g.round) % length;
 const instruction = (g: Match): 'truth' | 'invent' => ((Math.floor(g.round / 2) + g.round + Math.floor(g.seed / 2)) % 2 === 0 ? 'truth' : 'invent');
 export const normalize = (value: string) => value.trim().normalize('NFKC').replace(/\s+/gu, ' ').toLowerCase();
 
@@ -25,10 +19,14 @@ export interface Match {
   story: string | null; guess: string | null; drawing: Stroke[]; misses: number;
   board: (Seat | null)[]; turn: Seat; winner: Seat | null; winningLine: number[] | null;
   holder: Seat; passAt: number; notice: string; matched: boolean;
+  questions?: GameQuestion[];
 }
-export function newMatch(kind: GameId, id: string, seed: number, phase: Phase = 'lobby'): Match {
-  return { id, kind, seed, phase, round: 0, deadline: null, ready: [false,false], scores: [0,0], streak: 0, answers: [null,null], story: null, guess: null, drawing: [], misses: 0, board: Array(9).fill(null), turn: 0, winner: null, winningLine: null, holder: (seed % 2) as Seat, passAt: 0, notice: '', matched: false };
+export function newMatch(kind: GameId, id: string, seed: number, phase: Phase = 'lobby', questions: GameQuestion[] = []): Match {
+  return { id, kind, seed, phase, questions, round: 0, deadline: null, ready: [false,false], scores: [0,0], streak: 0, answers: [null,null], story: null, guess: null, drawing: [], misses: 0, board: Array(9).fill(null), turn: 0, winner: null, winningLine: null, holder: (seed % 2) as Seat, passAt: 0, notice: '', matched: false };
 }
+const totalRounds = (g: Match) => g.questions?.length || roundLimits[g.kind];
+const guessWords = (text: string) => normalize(text).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/gu, ' ').trim();
+
 function resolve(g: Match, text: string) {
   g.phase = 'resolving';
   g.deadline = null;
@@ -63,7 +61,7 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
     g.ready[seat] = true;
     if (g.phase === 'lobby') g.phase = 'ready';
     if (!g.ready.every(Boolean)) return true;
-    if (g.phase === 'resolving' && g.round + 1 === rounds[g.kind]) {
+    if (g.phase === 'resolving' && g.round + 1 === totalRounds(g)) {
       g.phase = 'results';
       return true;
     }
@@ -118,10 +116,12 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
         return true;
       }
       if (action.type !== 'drawing-guess') return false;
-      const words = normalize(action.text).replace(/[^\p{L}\s]/gu, '');
-      const expected = drawingAnswers[promptIndex(g, drawingAnswers.length)];
+      const question = g.questions?.[g.round];
+      if (!question) return false;
+      const words = guessWords(action.text);
+      const terms = question.answerTerms.map(guessWords).filter(Boolean);
       g.guess = action.text;
-      g.matched = expected.every(word => (` ${words} `).includes(` ${word} `));
+      g.matched = !!words && (words === guessWords(question.text) || terms.length > 0 && terms.every(term => (` ${words} `).includes(` ${term} `)));
       if (g.matched) {
         const bonus = Math.floor(Math.max(0, (g.deadline! - now) / 1000) / 20);
         g.scores[seat] += 2 + bonus;
@@ -167,10 +167,9 @@ export function gameView(g: Match, seat: Seat) {
   const done = g.phase === 'results' || g.phase === 'resolving';
   const visible = done || g.phase === 'playing';
   const myTurn = actor(g) === seat;
-  const prompt = g.kind === 'same' || g.kind === 'bluff' || g.kind === 'draw'
-    ? prompts[g.kind][promptIndex(g, prompts[g.kind].length)] : null;
+  const prompt = g.questions?.[g.round]?.text ?? null;
   return {
-    id: g.id, kind: g.kind, phase: g.phase, round: g.round, total: rounds[g.kind], deadline: g.deadline,
+    id: g.id, kind: g.kind, phase: g.phase, round: g.round, total: totalRounds(g), deadline: g.deadline,
     ready: g.ready, scores: g.scores, streak: g.streak, locked: g.answers.map(Boolean),
     answers: done ? g.answers : null, ownAnswer: g.answers[seat], story: g.story,
     instruction: g.kind === 'bluff' && visible && (myTurn || done) ? instruction(g) : null,

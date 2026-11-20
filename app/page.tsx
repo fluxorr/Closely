@@ -7,10 +7,8 @@ import { Brand } from '@/components/Brand';
 import { EntryButton } from '@/components/RoomEntry';
 import { GameCover } from '@/components/GameCover';
 import { PreviewCard } from '@/components/PreviewCard';
-import { CARDS } from '@/lib/cards/data';
 import { games, newGames } from '@/lib/rooms/catalog';
 
-const sample = CARDS.find(card => card.id === '19')!;
 const steps = [
   { title: 'Make a room', text: 'Pick a name and get a little corner of your own.' },
   { title: 'Send the invite', text: 'Share a private link with your favorite person.' },
@@ -36,7 +34,7 @@ export default function Home() {
       <div className="section-divider"><a href="#cards" aria-label="Explore conversation cards"><ArrowDownIcon size={16} aria-hidden /></a></div>
       <section id="cards" className="card-feature" aria-labelledby="cards-title">
         <div className="feature-copy"><p className="eyebrow">Conversation cards</p><h2 id="cards-title">Good questions.<br /> Better rabbit holes.</h2><p>Get silly, get thoughtful, or see what you both wrote when your answers turn over together.</p><EntryButton kind="create" className="button secondary">Play cards</EntryButton></div>
-        <div className="card-demo"><Image src="/assets/illustrations/notes.webp" alt="" fill sizes="(max-width: 760px) 94vw, 58vw" /><PreviewCard prompt={sample.text} /></div>
+        <div className="card-demo"><Image src="/assets/illustrations/notes.webp" alt="" fill sizes="(max-width: 760px) 94vw, 58vw" /><PreviewCard /></div>
       </section>
       <section id="games" className="landing-section" aria-labelledby="games-title"><div className="section-heading"><div><p className="eyebrow">Games for two</p><h2 id="games-title">What are we playing?</h2></div><p>A little teamwork, a little mischief, and something to draw very badly.</p></div>
         <div className="game-grid">{newGames.map((kind, index) => <GameCover key={kind} kind={kind} variant={index === 0 ? 'featured' : 'standard'} action={<EntryButton kind="create" className="button text-button">Play {games[kind].title} <ArrowRightIcon size={16} aria-hidden /></EntryButton>} />)}</div>

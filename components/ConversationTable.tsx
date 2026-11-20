@@ -31,10 +31,12 @@ export function ConversationTable({ view, send, disabled }: { view: RoomView; se
   const card = view.card!;
   const readyForAnswer = card.mode === 'reveal' && card.phase === 'revealed';
   const blocked = disabled || !!view.proposal;
+  const empty = card.phase === 'empty';
+  const exhausted = card.phase === 'exhausted';
   const partner = view.players[view.seat === 0 ? 1 : 0];
   const change = (category: DeckCategory, mode: 'talk' | 'reveal') => void send({ type: 'cards', category, mode });
   return <section className="card-room" aria-labelledby="card-room-title">
-    <div className="room-title"><div><p className="eyebrow">Conversation cards</p><h1 id="card-room-title">The card table</h1></div><span className="tag">Card {card.round}</span></div>
+    <div className="room-title"><div><p className="eyebrow">Conversation cards</p><h1 id="card-room-title">The card table</h1></div>{card.cardId && <span className="tag">Card {card.round}</span>}</div>
     <div className="card-controls">
       <div className="segmented" role="group" aria-label="Card mode"><button aria-pressed={card.mode === 'talk'} disabled={blocked} onClick={() => change(card.category,'talk')}>Talk Together</button><button aria-pressed={card.mode === 'reveal'} disabled={blocked} onClick={() => change(canWrite(card.category) ? card.category : 'fun','reveal')}>Answer &amp; Reveal</button></div>
       <CategoryPicker selected={card.category} mode={card.mode} onSelect={category => change(category, card.mode)} disabled={blocked} />
@@ -48,8 +50,8 @@ export function ConversationTable({ view, send, disabled }: { view: RoomView; se
         </div>
         <div className="table-sheet table-front" aria-hidden={card.phase === 'concealed'}>
           <span className="tag">{names[card.sourceCategory ?? card.category]}</span>
-          <h2 aria-live="polite">{card.phase === 'exhausted' ? 'You reached the end of this deck.' : card.text}</h2>
-          {card.phase === 'exhausted' && <button className="button primary" disabled={blocked} onClick={() => void send({ type: 'shuffle' })}><ArrowCounterClockwiseIcon size={16} aria-hidden /> Shuffle again</button>}
+          <h2 aria-live="polite">{empty ? 'No questions in this deck yet.' : exhausted ? 'You reached the end of this deck.' : card.text}</h2>
+          {(empty || exhausted) && <button className="button primary" disabled={blocked} onClick={() => void send({ type: 'shuffle' })}><ArrowCounterClockwiseIcon size={16} aria-hidden /> {empty ? 'Check again' : 'Shuffle again'}</button>}
         </div>
       </div>
       <div className="table-reactions" aria-live="polite">{view.reactions.map(r => <span className="reaction-float" role="img" key={r.id} aria-label={`${view.players[r.seat]?.name} reacted ${r.emoji}`}>{r.emoji}</span>)}</div>
@@ -61,7 +63,7 @@ export function ConversationTable({ view, send, disabled }: { view: RoomView; se
     {card.skipped && <p className="status-note" role="status">This card was passed.</p>}
     <div className="table-toolbar">
       <div className="reaction-buttons" role="group" aria-label="Reactions">{reactions.map((emoji,i) => <button className="icon-button" key={emoji} aria-label={`React ${['heart','fire','laugh','touched','kiss','sleepy'][i]}`} disabled={disabled} onClick={() => void send({ type: 'reaction', emoji })}>{emoji}</button>)}</div>
-      {card.phase !== 'exhausted' && <div className="actions">
+      {card.cardId && <div className="actions">
         {card.mode === 'talk' && card.phase === 'revealed' && <button className="button secondary" disabled={disabled} onClick={() => void send({ type: 'discuss' })}>Discuss</button>}
         {card.phase === 'concealed' || readyForAnswer ? <button className="button secondary" disabled={blocked} onClick={() => void send({ type: 'skip' })}><SkipForwardIcon size={16} aria-hidden /> Skip</button> : <button className="button primary" disabled={blocked} onClick={() => void send({ type: 'next' })}>Next card <ArrowRightIcon size={16} aria-hidden /></button>}
       </div>}

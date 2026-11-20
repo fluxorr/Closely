@@ -1,6 +1,11 @@
-export const categories = ['all', 'deep', 'fun', 'memory', 'action', 'spicy', 'naughty'] as const;
+const decks = ['deep', 'fun', 'memory', 'action', 'spicy', 'naughty'] as const;
+export const categories = ['all', ...decks] as const;
+export const cardCategories = [...decks, 'game'] as const;
 export type DeckCategory = typeof categories[number];
-export const canWrite = (category: DeckCategory | 'game') => category === 'all' || category === 'deep' || category === 'fun' || category === 'memory';
+export type CardCategory = typeof cardCategories[number];
+export const writtenCategories = ['deep', 'fun', 'memory'] as const;
+export const randomCategories = ['deep', 'fun', 'memory', 'action', 'game'] as const;
+export const canWrite = (category: DeckCategory | CardCategory) => category === 'all' || writtenCategories.some(value => value === category);
 
 export const games = {
   same: { title: 'Same Brain', tagline: 'Think alike and see where your minds meet.', type: 'Cooperative', minutes: '2–4 min', difficulty: 'Easy', art: '/assets/games/same.webp', instructions: 'Write the first answer that comes to mind. Answers match when the words are the same, ignoring case and extra spaces. Match twice in a row for a bonus.', status: 'available', action: 'answer' },
@@ -13,6 +18,8 @@ export const games = {
 export type GameId = keyof typeof games;
 export const gameIds = ['same', 'bluff', 'draw', 'ttt', 'rps', 'potato'] as const satisfies readonly GameId[];
 export const newGames = ['same', 'bluff', 'draw'] as const;
+export type PromptGame = typeof newGames[number];
+export const usesPrompts = (kind: GameId): kind is PromptGame => newGames.some(game => game === kind);
 export const classicGames = ['ttt', 'rps', 'potato'] as const;
 export const reactions = ['❤️', '🔥', '😂', '🥺', '😘', '😴'] as const;
 export const inkColors = ['ink', 'rose', 'sage', 'sky'] as const;

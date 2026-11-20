@@ -15,4 +15,5 @@ Run `npm run lint` and `npm run typecheck`. With Chrome and a running app, use `
 
 - [Architecture audit and rollback](docs/closely-audit.md)
 - [Deployment and verification](docs/DEPLOYMENT.md)
+- [Add questions in Neon](docs/QUESTIONS.md)
 - [Art inventory and licences](docs/ASSET_LICENSES.md)

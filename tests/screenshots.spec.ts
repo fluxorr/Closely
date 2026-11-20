@@ -121,7 +121,8 @@ test('keyboard navigation, flip preview and branded error', async ({ page }) => 
   const preview = page.getByRole('button', { name:'Turn me over' });
   await preview.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('If we could teleport anywhere for dinner tonight, where to?')).toBeVisible();
+  await expect(page.locator('.preview-card')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.preview-card')).toHaveAttribute('aria-busy','false');
   await page.goto('/room/short-invite');
   await expect(page.getByRole('heading', { name:'That invite looks off.' })).toBeVisible();
   await capture(page,'invalid-invite-360');

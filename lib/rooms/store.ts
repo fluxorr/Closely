@@ -1,12 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import { database } from '@/src/database/client';
+import { questionBank } from '@/src/database/queries/questions';
 import { limits, outbox, receipts, rooms } from '@/src/database/schemas/rooms';
 import type { z } from 'zod';
 import type { entry, envelope, join } from './actions';
 import { hash, inviteFor, roomLifetime, same } from './auth';
 import { tickMatch, type Seat } from './game';
-import { applyRoomAction, legacyId, makeRoom, roomView, sessionId, type RoomState } from './state';
+import { applyRoomAction, hasLegacyActivity, legacyId, makeRoom, resetLegacyActivity, roomView, sessionId, type RoomState } from './state';
 
 type Row = typeof rooms.$inferSelect;
 type Transaction = Parameters<Parameters<ReturnType<typeof database>['transaction']>[0]>[0];
@@ -61,16 +62,17 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string) {
   });
 }
 export async function readRoom(id: string, guest: string | null) {
+  if (!guest) return { status: 401 } as const;
   const row = await lookup(id);
   const seat = row ? seatOf(row, guest) : null;
   if (!row || seat === null) return { status: 401 } as const;
   const now = Date.now();
   if (row.expires <= now) return { status: 410 } as const;
-  if (row.state.match?.deadline != null && row.state.match.deadline <= now) {
+  if (hasLegacyActivity(row.state) || row.state.match?.deadline != null && row.state.match.deadline <= now) {
     return database().transaction(async tx => {
       const [live] = await tx.select().from(rooms).where(eq(rooms.id, id)).for('update');
       if (!live || live.expires <= now) return { status: 410 } as const;
-      const changed = !!live.state.match && tickMatch(live.state.match, now);
+      const changed = resetLegacyActivity(live.state) || !!live.state.match && tickMatch(live.state.match, now);
       const current = changed ? await save(tx, live, live.state, now, seat) : live;
       return { status: 200, view: view(current, seat, now), changed } as const;
     });
@@ -93,9 +95,10 @@ export async function mutateRoom(id: string, guest: string | null, message: z.in
     const requestHash = hash(JSON.stringify([message.sessionId, action]));
     const [old] = await tx.select().from(receipts).where(and(eq(receipts.room, id), eq(receipts.seat, seat), eq(receipts.id, actionId))).limit(1);
     if (old) return same(old.hash, requestHash) ? { status: 200, view: view(row, seat, now), changed: false } as const : { status: 409, error: 'This action was already used.', view: view(row, seat, now) } as const;
-    if (row.state.match && tickMatch(row.state.match, now)) {
+    const legacy = resetLegacyActivity(row.state);
+    if (legacy || row.state.match && tickMatch(row.state.match, now)) {
       const updated = await save(tx, row, row.state, now, seat);
-      return { status: 409, error: 'The timer moved on.', view: view(updated, seat, now), changed: true } as const;
+      return { status: 409, error: legacy ? 'The room was updated. Choose an activity again.' : 'The timer moved on.', view: view(updated, seat, now), changed: true } as const;
     }
     const independent = action.type === 'chat' || action.type === 'reaction';
     if (!independent && (row.version !== expectedVersion || message.sessionId !== sessionId(row.state))) {
@@ -103,7 +106,11 @@ export async function mutateRoom(id: string, guest: string | null, message: z.in
     }
     const minGap = action.type === 'stroke' ? 110 : action.type === 'reaction' ? 400 : action.type === 'chat' || action.type === 'drawing-guess' ? 650 : 0;
     if (row.state.lastActions[seat][action.type] > now - minGap) return { status: 429, error: 'Give it a moment and try again.', view: view(row, seat, now) } as const;
-    if (!applyRoomAction(row.state, seat, action, id, actionId, now)) return { status: 422, error: 'That action isn’t available right now.', view: view(row, seat, now) } as const;
+    const applied = await applyRoomAction(row.state, seat, action, id, actionId, now, questionBank(tx));
+    if (applied !== true) {
+      const error = applied === 'missing-questions' ? 'This game has no published prompts yet.' : 'That action isn’t available right now.';
+      return { status: 422, error, view: view(row, seat, now) } as const;
+    }
     row.state.lastActions[seat][action.type] = now;
     const updated = await save(tx, row, row.state, now, seat);
     await tx.insert(receipts).values({ room: id, seat, id: actionId, hash: requestHash });
