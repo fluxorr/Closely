@@ -1,6 +1,9 @@
 'use client';
 
-import { Brush, Eraser, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowCounterClockwise';
+import { EraserIcon } from '@phosphor-icons/react/dist/ssr/Eraser';
+import { PaintBrushIcon } from '@phosphor-icons/react/dist/ssr/PaintBrush';
+import { TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { inkColors } from '@/lib/rooms/catalog';
 import type { Stroke } from '@/lib/rooms/actions';
@@ -115,11 +118,11 @@ export function DrawingBoard({ drawing, editable, send, disabled }: { drawing: S
   return <div className="drawing-board">
     <canvas ref={board} className={editable ? 'drawable' : ''} aria-label={editable ? 'Drawing canvas. Use your finger, mouse, or pen to sketch the secret prompt.' : 'Your partner’s drawing canvas'} onPointerDown={down} onPointerMove={move} onPointerUp={finish} onLostPointerCapture={finish} onPointerCancel={finish} />
     {editable && <div className="drawing-tools" role="group" aria-label="Drawing tools">
-      <button className="icon-button" title="Brush" aria-label="Brush" aria-pressed={!erase} onClick={() => setErase(false)}><Brush size={18} aria-hidden /></button>
-      <button className="icon-button" title="Eraser" aria-label="Eraser" aria-pressed={erase} onClick={() => setErase(true)}><Eraser size={18} aria-hidden /></button>
+      <button className="icon-button" title="Brush" aria-label="Brush" aria-pressed={!erase} onClick={() => setErase(false)}><PaintBrushIcon size={18} aria-hidden /></button>
+      <button className="icon-button" title="Eraser" aria-label="Eraser" aria-pressed={erase} onClick={() => setErase(true)}><EraserIcon size={18} aria-hidden /></button>
       {inkColors.map(color => <button key={color} className={`icon-button pen pen-${color}`} aria-label={`${color} ink`} aria-pressed={ink === color && !erase} onClick={() => { setInk(color); setErase(false); }}><span aria-hidden /></button>)}
-      <button className="icon-button" title="Undo stroke" aria-label="Undo stroke" disabled={disabled || !drawing.length} onClick={() => void send({ type: 'drawing-undo' })}><RotateCcw size={17} aria-hidden /></button>
-      <button className="icon-button" title="Clear drawing" aria-label="Clear drawing" disabled={disabled || !drawing.length} onClick={() => setConfirmClear(true)}><Trash2 size={17} aria-hidden /></button>
+      <button className="icon-button" title="Undo stroke" aria-label="Undo stroke" disabled={disabled || !drawing.length} onClick={() => void send({ type: 'drawing-undo' })}><ArrowCounterClockwiseIcon size={17} aria-hidden /></button>
+      <button className="icon-button" title="Clear drawing" aria-label="Clear drawing" disabled={disabled || !drawing.length} onClick={() => setConfirmClear(true)}><TrashIcon size={17} aria-hidden /></button>
     </div>}
     {editable && confirmClear && <div className="actions" role="group" aria-label="Confirm clear drawing"><button className="button primary" disabled={disabled} onClick={() => { setConfirmClear(false); void send({ type: 'drawing-clear' }); }}>Clear the canvas</button><button className="button secondary" onClick={() => setConfirmClear(false)}>Keep drawing</button></div>}
   </div>;

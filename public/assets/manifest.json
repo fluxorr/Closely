@@ -301,11 +301,21 @@
     {
       "id": "sparkle-trio",
       "file": "stick-it-up@0.4.0/SparkleTrioSticker",
-      "usage": "Waiting and round celebration",
+      "usage": "Decoration in historical QA screenshots",
       "source": "licensed",
       "decorative": true,
       "licence": "MIT",
       "licenseFile": "docs/licenses/STICK-IT-UP.txt",
+      "status": "retired"
+    },
+    {
+      "id": "phosphor-icons",
+      "file": "@phosphor-icons/react@2.1.10",
+      "usage": "Outline icons for controls, navigation and status",
+      "source": "licensed",
+      "decorative": true,
+      "licence": "MIT",
+      "licenseFile": "docs/licenses/PHOSPHOR.txt",
       "status": "reviewed"
     }
   ]
