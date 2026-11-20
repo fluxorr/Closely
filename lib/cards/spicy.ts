@@ -1,4 +1,4 @@
-import { type CardInfo, type Category } from './types';
+import { type CardInfo } from './types';
 
 export const SPICY_CARDS: CardInfo[] = [
   { id: '77', category: 'spicy', text: 'What is your favorite memory of us in the bedroom?' },

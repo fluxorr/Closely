@@ -1,105 +1,20 @@
 # Closely
 
-A real-time conversation and games experience for couples to deepen their connection through interactive prompts and activities.
+A private room for two. Share conversation cards, lock answers and reveal them together, chat, and play Same Brain, Bluff My Love, Draw Me Wrong, or three classic games.
 
-## Features
+## Run locally
 
-### Card-Based Conversations
-- Interactive cards with thought-provoking questions
-- Categories: Deep, Fun, Memory, Action, Spicy, Naughty
-- Smooth flip animations
-- Card uniqueness - each card in a room is drawn only once (stored in localStorage)
-- Resets when all cards have been used
+1. Install dependencies with `bun install` or `npm ci`. Both lockfiles are maintained.
+2. Create a PostgreSQL database and apply `src/database/migrations/0001_rooms.sql` with `psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f src/database/migrations/0001_rooms.sql`.
+3. Set `DATABASE_URL` and a random `SESSION_SECRET` of at least 32 characters. Use `openssl rand -hex 32` for a new secret. Keep these values in a local environment file or the shell environment.
+4. Start with `npm run dev`. For production-mode QA, run `npm run build` and `npm run start -- --port 3091`.
 
-### Real-Time Chat
-- Synchronized messaging between partners
-- Message history within the room
-- Collapsible sidebar (slides in from right)
-- Chat button always visible on screen
-- Name persistence across sessions
+Ably provides scoped room notifications and presence. Without `ABLY_API_KEY` the application uses authenticated snapshot polling, which is enough for local browser tests. Set `CRON_SECRET` to enable the scheduled expiry cleanup and outbox retry route.
 
-### Reactions
-- React to conversations with emojis (❤️, 🔥, 😂, 🥺, 😘, 😴)
-- Floating animation across the screen in real-time
+## Verify
 
-### Mini Games
+Run `npm run lint` and `npm run typecheck`. With Chrome and a running app, use `npm test`. `CLOSELY_BASE_URL` defaults to `http://127.0.0.1:3091`. Set `CLOSELY_CAPTURE=1` to capture the desktop and mobile screenshots, or `CLOSELY_BROWSER_CHANNEL` to select another installed Chromium channel.
 
-#### Tic Tac Toe
-- Classic X and O game
-- Real-time syncing between players
-- Winner detection and winning line highlight
-- Reset board functionality
-
-#### Rock Paper Scissors
-- Player vs player gameplay
-- Secret choice phase, then reveal
-- Win detection with celebration animation
-
-#### Hot Potato
-- Pass the "hot potato" before it explodes
-- Timer countdown
-- Visual feedback when holding the potato
-
-### Room System
-- Unique room codes for sharing
-- Copy room link button
-- Device-based identification
-
-## Quick Start
-
-1. Run `npm install` and `npm run dev`
-2. Open http://localhost:3000
-3. Enter a room code or create new room
-4. Enter your name to join
-5. Share the room link with your partner
-6. Start drawing cards and playing games
-
-## Design
-
-Neo-brutalist aesthetic with:
-- Bold black borders (4px)
-- Hard drop shadows
-- High-contrast colors
-- Playful animations (Framer Motion)
-- Responsive layout for mobile and desktop
-
-## Technology
-
-- Next.js 16 (App Router with Turbopack)
-- React 19
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- LocalStorage for persistence
-
-## Folder Structure
-
-```
-app/
-├── room/[id]/
-│   ├── page.tsx      # Main card room
-│   └── games/
-│       └── page.tsx  # Arcade games
-lib/
-├── socket.ts         # Mock real-time sync
-└── cards.ts        # Card prompts
-components/
-└── Card.tsx       # Card component
-```
-
-## API Routes
-
-```
-/api/room/[id]     # GET (sync state), POST (update state)
-```
-
-## Notes
-
-- Uses mock WebSocket (polling-based) for real-time sync
-- Data stored in memory on server
-- Device ID used for player identification
-- Suitable for local development/demo only
-
-## License
-
-MIT
+- [Architecture audit and rollback](docs/closely-audit.md)
+- [Deployment and verification](docs/DEPLOYMENT.md)
+- [Art inventory and licences](docs/ASSET_LICENSES.md)

@@ -1,111 +1,47 @@
-"use client";
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowDown, ArrowUpRight, Copy, HeartHandshake, Layers2, Send, Sparkles } from 'lucide-react';
+import { Brand } from '@/components/Brand';
+import { EntryButton } from '@/components/RoomEntry';
+import { GameCover } from '@/components/GameCover';
+import { PreviewCard } from '@/components/PreviewCard';
+import { CARDS } from '@/lib/cards/data';
+import { newGames } from '@/lib/rooms/catalog';
 
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/components/ThemeProvider";
-
+const sample = CARDS.find(card => card.id === '19')!;
+const steps = [
+  { title: 'Make a room', text: 'Pick a name and get a little corner of your own.', Icon: Layers2 },
+  { title: 'Send the invite', text: 'Share a private link with your favorite person.', Icon: Send },
+  { title: 'Pick something to play', text: 'Flip a card, draw something odd, or see if you think alike.', Icon: HeartHandshake },
+];
 export default function Home() {
-  const router = useRouter();
-  const [isJoining, setIsJoining] = useState(false);
-  const { showToast, playSound } = useToast();
-
-  const startRoom = () => {
-    if (isJoining) return;
-    setIsJoining(true);
-    playSound("click");
-    const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setTimeout(() => {
-      showToast("Room created!", "success");
-      router.push(`/room/${roomId}`);
-    }, 400);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !isJoining) {
-        startRoom();
-      }
-      if (e.key === "Escape" && isJoining) {
-        setIsJoining(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isJoining]);
-
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden bg-[#fffcf2] selection:bg-froly selection:text-white">
-      {/* Decorative Grid - Neo-Brutalist Element */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="dot-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="2" fill="black" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dot-grid)" />
-        </svg>
-      </div>
-
-      {/* Floating Graphic Element */}
-      <motion.div
-        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 right-10 md:right-32 w-32 h-32 bg-highlight border-8 border-black rounded-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-0"
-      />
-      <motion.div
-        animate={{ y: [0, 20, 0], rotate: [0, -10, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute bottom-20 left-10 md:left-32 w-24 h-24 bg-primary border-8 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-0"
-      />
-
-      {/* Floating Graphic Element */}
-
-      {/* Main Content Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5, type: "spring", bounce: 0.5 }}
-        className="z-10 flex flex-col items-center text-center bg-white border-8 border-black p-10 md:p-16 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] max-w-2xl relative"
-      >
-        {/* Banner Tape */}
-        <div className="absolute -top-6 bg-accent border-4 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform -rotate-3 text-2xl font-black uppercase tracking-widest">
-          Beta V1
+  return <>
+    <header className="site-header wrap"><Brand />
+      <nav aria-label="Main navigation"><a href="#cards">Cards</a><a href="#games">Games</a><a href="#how">How it works</a></nav>
+      <EntryButton kind="create" className="button small primary">Create a room <ArrowUpRight size={15} aria-hidden /></EntryButton>
+    </header>
+    <main id="main-content" className="wrap landing">
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <p className="eyebrow"><Sparkles size={15} aria-hidden /> Close, even when you’re not.</p>
+          <h1 id="hero-title">A little world<br /> <em>for just us.</em></h1>
+          <p className="hero-description">Draw terrible things. Guess each other’s thoughts. Ask the questions that matter. All together, live.</p>
+          <div className="actions"><EntryButton kind="create">Create a room <ArrowUpRight size={17} aria-hidden /></EntryButton><EntryButton kind="join" className="button secondary" /></div>
+          <p className="hero-foot">Two people, one private room. Just bring your person.</p>
         </div>
-
-        <div className="space-y-6 mb-12 mt-6">
-          <h1 className="text-7xl md:text-8xl font-display font-black text-black uppercase tracking-tighter mix-blend-multiply">
-            Closely
-          </h1>
-          <p className="text-xl md:text-2xl text-black font-bold max-w-sm mx-auto leading-relaxed border-t-4 border-b-4 border-black py-4">
-            Real-time conversations for couples to get closer.
-          </p>
-          <div className="text-xl font-display font-black tracking-widest uppercase z-10 bg-white px-8 py-4 border-y-8 border-black mix-blend-normal">
-            close, even when you&apos;re not
-
-          </div>
-        </div>
-
-<motion.button
-          whileHover={isJoining ? {} : { scale: 1.05, y: -4, x: -4, boxShadow: "12px 12px 0px_0px_rgba(0,0,0,1)" }}
-          whileTap={{ scale: 0.95, y: 4, x: 4, boxShadow: "0px_0px_0px_0px_rgba(0,0,0,1)" }}
-          onClick={startRoom}
-          disabled={isJoining}
-          style={{ touchAction: "manipulation" }}
-          className="px-12 py-6 bg-destructive text-black border-4 border-black font-black uppercase tracking-widest rounded-none shadow-brutal-md text-2xl flex items-center justify-center gap-4 transition-all w-full md:w-auto disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-black focus:ring-offset-4"
-        >
-          {isJoining ? (
-            <>
-              <Loader2 className="w-6 h-6 animate-spin" />
-              Launching...
-            </>
-          ) : (
-            "Start Room Now"
-          )}
-        </motion.button>
-      </motion.div>
+        <figure className="hero-art"><Image src="/assets/illustrations/world.webp" fill sizes="(max-width: 760px) 94vw, (max-width: 1200px) 55vw, 680px" alt="A paper note travels between two glowing rooms at twilight." preload /><figcaption>Made for wherever you both are.</figcaption></figure>
+      </section>
+      <div className="section-divider"><a href="#cards" aria-label="Explore conversation cards"><ArrowDown size={16} aria-hidden /></a></div>
+      <section id="cards" className="card-feature" aria-labelledby="cards-title">
+        <div className="feature-copy"><p className="eyebrow">Conversation cards</p><h2 id="cards-title">Good questions.<br /> Better rabbit holes.</h2><p>Get silly, get thoughtful, or see what you both wrote when your answers turn over together.</p><EntryButton kind="create" className="button secondary">Play cards <ArrowUpRight size={16} aria-hidden /></EntryButton></div>
+        <div className="card-demo"><Image src="/assets/illustrations/notes.webp" alt="" fill sizes="(max-width: 760px) 94vw, 58vw" /><PreviewCard prompt={sample.text} /></div>
+      </section>
+      <section id="games" className="landing-section" aria-labelledby="games-title"><div className="section-heading"><div><p className="eyebrow">Games for two</p><h2 id="games-title">What are we playing?</h2></div><p>A little teamwork, a little mischief, and something to draw very badly.</p></div>
+        <div className="game-grid">{newGames.map(kind => <GameCover key={kind} kind={kind} action={<EntryButton kind="create" className="button text-button">Play together <ArrowUpRight size={16} aria-hidden /></EntryButton>} />)}</div>
+      </section>
+      <section id="how" className="landing-section how" aria-labelledby="how-title"><h2 id="how-title">From link to date night</h2><ol>{steps.map(({ title, text, Icon }) => <li key={title}><Icon size={27} strokeWidth={1.5} aria-hidden /><h3>{title}</h3><p>{text}</p></li>)}</ol></section>
+      <section className="closing"><Image src="/assets/illustrations/waiting.webp" alt="" fill sizes="(max-width: 760px) 94vw, 54vw" /><div><Copy size={23} aria-hidden /><h2>Send a little closer.</h2><p>Make a room. We’ll save a seat for your person.</p><EntryButton kind="create">Create a room <ArrowUpRight size={16} aria-hidden /></EntryButton></div></section>
     </main>
-  );
+    <footer className="site-footer wrap"><Brand /><p>Close, even when you’re not.</p><div className="footer-links"><Link href="/privacy">Privacy</Link><a href="https://github.com/fluxorr/closely">GitHub <ArrowUpRight size={14} aria-hidden /></a></div></footer>
+  </>;
 }

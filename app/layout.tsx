@@ -1,129 +1,30 @@
-import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next"
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import type { Metadata, Viewport } from 'next';
+import localFont from 'next/font/local';
+import './globals.css';
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const sans = localFont({ src: '../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2', variable: '--dm-sans', weight: '100 1000', display: 'swap' });
+const serif = localFont({ src: [
+  { path: '../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2', weight: '100 900', style: 'normal' },
+  { path: '../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2', weight: '100 900', style: 'italic' },
+], variable: '--fraunces', display: 'swap' });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const META_URL = "https://closely.example.com";
-const META_IMG = `${META_URL}/og-image.png`;
-
+const description = 'Draw terrible things, guess each other’s thoughts, and ask the questions that matter. A private place to play for two.';
 export const metadata: Metadata = {
-  metadataBase: new URL(META_URL),
-  manifest: "/manifest.json",
-  title: {
-    default: "Closely",
-    template: "%s | Closely",
-  },
-  description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
-  keywords: ["LDR", "long distance relationship", "couples", "connection", "together", " Valentine's Day", "gift"],
-  authors: [{ name: "Fluxorr" }],
-  creator: "Fluxorr",
-  publisher: "Closely",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  openGraph: {
-    title: {
-      default: "Closely",
-      template: "%s | Closely",
-    },
-    description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
-    url: META_URL,
-    siteName: "Closely",
-    locale: "en_US",
-    type: "website",
-    images: [
-      {
-        url: META_IMG,
-        width: 1200,
-        height: 630,
-        alt: "Closely - Stay connected with your loved ones",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: {
-      default: "Closely",
-      template: "%s | Closely",
-    },
-    description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
-    images: [META_IMG],
-    creator: "@Fluxorr",
-  },
-  alternates: {
-    canonical: META_URL,
-    languages: {
-      en: META_URL,
-    },
-  },
+  metadataBase: new URL('https://closely.byflux.me'),
+  title: { default: 'Closely · A little world for just us', template: '%s · Closely' },
+  description,
+  manifest: '/manifest.json',
+  icons: { apple: '/apple-touch-icon.png' },
+  referrer: 'no-referrer',
+  openGraph: { title: 'Closely · A little world for just us', description, url: '/', siteName: 'Closely', type: 'website', images: [{ url: '/og-closely.png', width: 1200, height: 630, alt: 'Closely. A little world for just us.' }] },
+  twitter: { card: 'summary_large_image', title: 'Closely · A little world for just us', description, images: ['/og-closely.png'] },
 };
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <Analytics />
-
-<body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <ServiceWorkerRegistration />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "WebApplication",
-                name: "Closely",
-                description: "Get Closer to your LDR Partner. Share moments, play games, and stay connected with your long-distance love.",
-                url: META_URL,
-                applicationCategory: "SocialNetworking",
-                operatingSystem: "Web Browser",
-                offers: {
-                  "@type": "Offer",
-                  price: "0",
-                  priceCurrency: "USD",
-                },
-                creator: {
-                  "@type": "Organization",
-                  name: "Closely",
-                  creator: "Fluxorr",
-                },
-              }),
-            }}
-          />
-          {children}
-        </ThemeProvider>
-        <div className="-my-6">
-          <header className="flex items-center justify-center text-xs font-serif font-semibold">made with love, for love</header>
-          <header className="flex items-center justify-center text-[10px] font-mono font-light">-Fluxorr</header>
-        </div>
-      </body>
-    </html>
-  );
+export const viewport: Viewport = { themeColor: '#F9F7F1' };
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return <html lang="en" className={`${sans.variable} ${serif.variable}`}><body>
+    <a className="skip-link" href="#main-content">Skip to content</a>
+    <ServiceWorkerRegistration />
+    {children}
+  </body></html>;
 }
