@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { and, eq, lt, sql } from 'drizzle-orm';
+import { and, eq, lt, or, sql } from 'drizzle-orm';
 import { database, queryRows } from '@/src/database/client';
 import { questionBank } from '@/src/database/queries/questions';
 import { limits, outbox, receipts, rooms } from '@/src/database/schemas/rooms';
@@ -73,18 +73,29 @@ export async function consume(key: string, allowed: number, now = Date.now()) {
   return row.hits <= allowed;
 }
 
+async function withInviteCode<T>(insert: () => Promise<T>) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await insert();
+    } catch (error) {
+      const cause = (error as { cause?: { code?: string; constraint?: string; constraint_name?: string } } | null)?.cause;
+      if (attempt >= 2 || cause?.code !== '23505' || (cause.constraint ?? cause.constraint_name) !== 'closely_rooms_display_code_key') throw error;
+    }
+  }
+}
+
 export async function createRoom(data: z.infer<typeof entry>, guest: string, rateKey: string) {
   const id = randomUUID();
   const now = Date.now();
-  const room: Row = { id, inviteHash: hash(inviteFor(id)), version: 0, state: makeRoom(participant(data, guest, now)), expires: now + roomLifetime, seen0: now, seen1: 0 };
-  const [created] = await queryRows<{ id: string }>(sql`
+  const room = { id, inviteHash: hash(inviteFor(id)), version: 0, state: makeRoom(participant(data, guest, now)), expires: now + roomLifetime, seen0: now, seen1: 0 };
+  const [created] = await withInviteCode(() => queryRows<{ displayCode: string }>(sql`
     with quota as (${meter(rateKey, now)})
     insert into ${rooms} (id, invite_hash, state, expires_at, seen_0)
     select ${room.id}, ${room.inviteHash}, ${JSON.stringify(room.state)}::jsonb, ${room.expires}, ${room.seen0}
     from quota where hits <= 20
-    returning id
-  `);
-  return created ? view(remember(room, now), 0, now) : null;
+    returning display_code as "displayCode"
+  `));
+  return created ? view(remember({ ...room, ...created }, now), 0, now) : null;
 }
 
 // The version guard lets concurrent requests read without a lock. Only the winning
@@ -117,15 +128,18 @@ async function save(row: Row, now: number, seat: Seat, receipt?: { id: string; h
 
 export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKey: string) {
   const now = Date.now();
-  const id = data.id;
+  const { id, code } = data;
+  const maxAttempts = code ? 12 : 35;
   const invitation = hash(data.invite ?? '');
-  const condition = id ? eq(rooms.id, id) : eq(rooms.inviteHash, invitation);
+  const condition = code ? or(eq(rooms.displayCode, code), eq(rooms.id, code)) : id ? eq(rooms.id, id) : eq(rooms.inviteHash, invitation);
   const player = participant(data, guest, now);
-  const validInvite = data.invite ? sql`room.invite_hash = ${invitation}` : sql`${Boolean(id && legacyId.test(id))}::boolean`;
+  const validInvite = data.invite ? sql`room.invite_hash = ${invitation}` : sql`${Boolean(code || id && legacyId.test(id))}::boolean`;
   const [initial] = await queryRows<{ allowed: boolean; changed: boolean; room: Row | null }>(sql`
     with quota as (${meter(rateKey, now)}), candidate as (
       select ${rooms}.* from ${rooms} cross join quota
-      where ${condition} and quota.hits <= 35
+      where ${condition} and quota.hits <= ${maxAttempts}
+      ${code ? sql`order by (${rooms.displayCode} = ${code}) desc` : sql.empty()}
+      limit 1
       for update of ${rooms}
     ), joined as (
       update ${rooms} as room
@@ -141,9 +155,9 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKe
       insert into ${outbox} (room_id, version, created_at)
       select id, version, ${now} from joined
     )
-    select hits <= 35 as allowed, exists (select 1 from joined) as changed, (
+    select hits <= ${maxAttempts} as allowed, exists (select 1 from joined) as changed, (
       select jsonb_build_object(
-        'id', id, 'inviteHash', invite_hash, 'version', version, 'state', state,
+        'id', id, 'inviteHash', invite_hash, 'displayCode', display_code, 'version', version, 'state', state,
         'expires', expires_at, 'seen0', seen_0, 'seen1', seen_1
       )
       from (
@@ -160,9 +174,9 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKe
     return { status: 200, view: view(remember(row, joinedAt), 1, joinedAt), changed: true } as const;
   }
   if (!row && id && legacyId.test(id) && !data.invite) {
-    const [created] = await database().insert(rooms).values({
+    const [created] = await withInviteCode(() => database().insert(rooms).values({
       id, inviteHash: hash(inviteFor(id)), state: makeRoom(participant(data, guest, now)), expires: now + roomLifetime, seen0: now,
-    }).onConflictDoNothing().returning();
+    }).onConflictDoNothing({ target: rooms.id }).returning());
     row = created ?? await lookup(id);
   }
 
@@ -178,7 +192,7 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKe
       row = await lookup(row.id);
       continue;
     }
-    const valid = data.invite ? same(row.inviteHash, invitation) : legacyId.test(row.id);
+    const valid = data.invite ? same(row.inviteHash, invitation) : code ? row.displayCode === code || row.id === code : legacyId.test(row.id);
     if (!valid) return { status: 404 } as const;
     if (row.expires <= currentTime) return { status: 410 } as const;
     if (row.state.players[1]) return { status: 409 } as const;

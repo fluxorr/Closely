@@ -1,11 +1,16 @@
 import { z } from 'zod';
 import { categories, gameIds, inkColors, reactions } from './catalog';
+import { normalizeRoomCode, roomCodePattern } from './inviteCode';
 
 const clean = (max: number) => z.string().trim().min(1).max(max);
 const name = clean(32).regex(/^[^\p{Cc}\p{Cf}]+$/u);
-const roomId = z.union([z.uuid(), z.string().regex(/^[A-Z0-9]{6}$/)]);
+const roomId = z.union([z.uuid(), z.string().regex(roomCodePattern)]);
 export const entry = z.object({ name, avatar: z.number().int().min(0).max(5).default(0) });
-export const join = entry.extend({ id: roomId.optional(), invite: z.string().trim().max(64).optional() });
+export const join = entry.extend({
+  id: roomId.optional(),
+  invite: z.string().trim().max(64).optional(),
+  code: z.string().max(32).transform(normalizeRoomCode).pipe(z.string().regex(roomCodePattern)).optional(),
+}).refine(data => data.code ? !data.id && !data.invite : Boolean(data.id || data.invite));
 export const roomIdSchema = roomId;
 export const cardMode = z.enum(['talk', 'reveal']);
 export const stroke = z.object({

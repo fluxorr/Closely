@@ -42,18 +42,21 @@ function Invite({ view }: { view: RoomView }) {
   useEffect(() => () => { if (timeout.current) clearTimeout(timeout.current); }, []);
   const copy = async (kind: 'link' | 'code') => {
     const url = `${window.location.origin}/room/${view.id}#invite=${view.invite}`;
-    const value = kind === 'link' ? url : view.invite;
+    const value = kind === 'link' ? url : view.code ?? view.invite;
     try {
       await navigator.clipboard.writeText(value);
       setCopied(kind);
       setManual('');
       if (timeout.current) clearTimeout(timeout.current);
-      timeout.current = setTimeout(() => setCopied(''), 1500);
+      timeout.current = setTimeout(() => setCopied(''), 1200);
     } catch { setManual(value); }
   };
   return <div className="invite-actions"><div className="actions">
     <button className="button primary" onClick={() => void copy('link')}>{copied === 'link' ? <CheckIcon size={17} aria-hidden /> : <LinkSimpleIcon size={18} aria-hidden />} {copied === 'link' ? 'Link copied' : 'Copy invite link'}</button>
-    <button className="button secondary" onClick={() => void copy('code')}>{copied === 'code' ? <CheckIcon size={16} aria-hidden /> : <CopyIcon size={16} aria-hidden />} {copied === 'code' ? 'Code copied' : 'Copy code'}</button>
+    <button className="button secondary" aria-label={view.code ? `Copy code ${view.code.split('').join(' ')}` : 'Copy code'} title="Copy room code" onClick={() => void copy('code')}>
+      {copied === 'code' ? <CheckIcon size={16} aria-hidden /> : <CopyIcon size={16} aria-hidden />}
+      {view.code ? <code className="invite-code">{view.code}</code> : 'Copy code'}
+    </button>
   </div><span className="sr-only" aria-live="polite">{copied ? `Invite ${copied} copied.` : ''}</span>{manual && <label className="manual-invite">Select and copy your invitation<input value={manual} readOnly onFocus={e => e.target.select()} /></label>}</div>;
 }
 function ChatDrawer({ view, send, disabled, dialog }: { view: RoomView; send: SendAction; disabled: boolean; dialog: React.RefObject<HTMLDialogElement | null> }) {

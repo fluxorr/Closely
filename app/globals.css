@@ -184,6 +184,7 @@ svg { flex-shrink: 0; }
 .waiting-scene figure, .hub-art { position: relative; aspect-ratio: 1.51; border-radius: 19px; overflow: hidden; background: var(--sand); }
 .waiting-scene figure > img, .hub-art img { object-fit: cover; }
 .manual-invite { display: grid; gap: 7px; margin-top: 10px; }
+.invite-code { font-family: ui-monospace, Menlo, monospace; letter-spacing: .11em; font-size: .97em; font-weight: 720; }
 .room-welcome { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 12px 0; }
 .hub-feature { background: #f8eee6; }
 .hub-feature h2 { margin-top: 11px; }

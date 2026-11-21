@@ -6,6 +6,7 @@ import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { handOffRoom, type RoomSnapshot } from '@/hooks/roomHandoff';
 import { playSound } from '@/lib/audio/sound';
+import { normalizeRoomCode, roomCodePattern } from '@/lib/rooms/inviteCode';
 
 export function AvatarChoice({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return <fieldset className="avatar-choices"><legend>Choose your color</legend>
@@ -16,12 +17,13 @@ export function AvatarChoice({ value, onChange }: { value: number; onChange: (va
 }
 function inviteInput(code: string) {
   const text = code.trim();
-  if (/^[a-z0-9]{6}$/i.test(text)) return { id: text.toUpperCase() };
+  const short = normalizeRoomCode(text);
+  if (roomCodePattern.test(short)) return { code: short };
   if (/^[A-Za-z0-9_-]{22}$/.test(text)) return { invite: text };
   try {
     const url = new URL(text);
     const id = url.pathname.match(/^\/room\/([^/]+)\/?$/)?.[1];
-    if (id) return { id, invite: new URLSearchParams(url.hash.slice(1)).get('invite') ?? undefined };
+    if (id) return { id: /^[a-z0-9]{6}$/i.test(id) ? id.toUpperCase() : id, invite: new URLSearchParams(url.hash.slice(1)).get('invite') ?? undefined };
   } catch { /* The inline error covers invalid invite formats. */ }
   return null;
 }
@@ -53,7 +55,7 @@ export function EntryForm({ kind, roomId, onJoined }: { kind: 'create' | 'join';
     finally { setPending(false); }
   }
   return <form className="entry-form" onSubmit={enter}>
-    {kind === 'join' && !roomId && <label>Invite link or code<input name="invite" autoComplete="off" spellCheck={false} maxLength={300} required /></label>}
+    {kind === 'join' && !roomId && <label>Invite link or code<input name="invite" placeholder="6-character code or link" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={300} required /></label>}
     <label>Your name<input name="name" autoComplete="nickname" maxLength={32} required /></label>
     <AvatarChoice value={avatar} onChange={setAvatar} />
     {error && <p role="alert" className="error-text">{error}</p>}

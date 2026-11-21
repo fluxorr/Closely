@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { RoomAction } from './actions';
 import { canWrite, usesPrompts, type CardCategory, type DeckCategory, type GameId } from './catalog';
 import { gameView, newMatch, playMatch, roundLimits, type Match, type Seat } from './game';
+import { roomCodePattern } from './inviteCode';
 import { selectionCategories, type CardMode, type CardQuestion, type QuestionBank } from './questions';
 
 type CardPhase = 'concealed' | 'revealed' | 'discussing' | 'completed' | 'skipped' | 'exhausted' | 'empty';
@@ -25,7 +26,7 @@ export interface RoomState {
   reactions: { id: string; seat: Seat; emoji: string; at: number }[];
   lastActions: [Record<string, number>, Record<string, number>];
 }
-export const legacyId = /^[A-Z0-9]{6}$/;
+export const legacyId = roomCodePattern;
 export const makeRoom = (p: Participant): RoomState => ({ schema: 1, players: [p,null], activity: 'hub', card: null, match: null, proposal: null, decks: {}, history: [], rounds: 0, messages: [], reactions: [], lastActions: [{},{}] });
 export const sessionId = (s: RoomState) => s.activity === 'cards' ? s.card!.id : s.activity === 'game' ? `${s.match!.id}:${s.match!.round}` : 'hub';
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -184,7 +185,7 @@ export async function applyRoomAction(s: RoomState, seat: Seat, action: RoomActi
   }
 }
 
-export function roomView(row: { id: string; version: number; state: RoomState }, seat: Seat, now: number, presence: [number, number], invite: string) {
+export function roomView(row: { id: string; version: number; state: RoomState; displayCode?: string }, seat: Seat, now: number, presence: [number, number], invite: string) {
   const { state: s } = row;
   const card = s.card;
   const revealed = card && card.phase !== 'concealed';
@@ -193,7 +194,7 @@ export function roomView(row: { id: string; version: number; state: RoomState },
   let answers: [Answer | null, Answer | null] | null = null;
   if (complete && !cardSkipped) answers = card.answers;
   return {
-    id: row.id, version: row.version, now, seat, invite,
+    id: row.id, version: row.version, now, seat, invite, code: row.displayCode,
     sessionId: sessionId(s), activity: s.activity, proposal: s.proposal,
     players: s.players.map((p, i) => p ? { name: p.name, avatar: p.avatar, online: i === seat || presence[i] + 14000 > now } : null),
     card: card ? {
