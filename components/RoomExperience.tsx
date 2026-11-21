@@ -14,14 +14,17 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRoom } from '@/hooks/useRoom';
+import { useRoomSounds } from '@/hooks/useRoomSounds';
 import { classicGames, games, newGames } from '@/lib/rooms/catalog';
 import type { RoomView } from '@/lib/rooms/state';
 import { Brand } from './Brand';
 import { CategoryPicker, ConversationTable, type SendAction } from './ConversationTable';
 import { GameCover } from './GameCover';
 import { EntryForm } from './RoomEntry';
+import { SoundControl } from './SoundControl';
 
 const GameStage = dynamic(() => import('./GameStage'), { loading: () => <div className="game-paper" role="status">Setting the stage…</div> });
+const NeverStage = dynamic(() => import('./NeverStage'), { loading: () => <div className="game-paper" role="status">Setting the stage…</div> });
 
 function initial(name: string) { return Array.from(name)[0]?.toLocaleUpperCase() ?? '?'; }
 function PlayerSeats({ view }: { view: RoomView }) {
@@ -101,10 +104,11 @@ function RoomHub({ view, send, disabled }: { view: RoomView; send: SendAction; d
 }
 export function RoomExperience({ id }: { id: string }) {
   const { view, status, error, pending, send, refresh, commit } = useRoom(id);
+  useRoomSounds(view);
   const dialog = useRef<HTMLDialogElement>(null);
   const partner = view?.players[view.seat === 0 ? 1 : 0];
   const disabled = pending || status !== 'ready';
-  if (!view || ['join','expired','invalid'].includes(status)) return <main className="entry-screen wrap" id="main-content"><Brand />
+  if (!view || ['join','expired','invalid'].includes(status)) return <main className="entry-screen wrap" id="main-content"><div className="entry-top"><Brand /><SoundControl /></div>
     <section className="entry-panel"><Image src="/assets/illustrations/notes.webp" alt="" width={520} height={347} preload /><div>
       {status === 'loading' ? <><h1>Opening the room…</h1><div className="loading-line" aria-hidden /></> : status === 'join' ? <><h1>A little room for two.</h1><p>Pick a name your partner will recognize.</p><EntryForm kind="join" roomId={id} onJoined={snapshot => { window.history.replaceState(null, '', window.location.pathname); commit(snapshot); }} /></> : <>
         <h1>{status === 'expired' ? 'This room has expired.' : status === 'invalid' ? 'That invite looks off.' : 'The room couldn’t connect.'}</h1><p>{status === 'offline' ? 'Check your connection and try the room again.' : 'Ask your person for a fresh invite, or make a room at home.'}</p>
@@ -115,6 +119,7 @@ export function RoomExperience({ id }: { id: string }) {
     <header className="room-header wrap"><Brand /><div className="actions">
       {view.activity === 'hub' ? <a className="button small secondary" href="#games">Games <ArrowDownIcon size={13} aria-hidden /></a> : <button className="button small secondary" disabled={disabled || !!view.proposal} onClick={() => void send({ type: 'return' })}><ArrowLeftIcon size={16} aria-hidden /> Room hub</button>}
       <button className="button small secondary" onClick={() => dialog.current?.showModal()}><ChatCircleIcon size={17} aria-hidden /> Chat</button>
+      <SoundControl />
     </div></header>
     <main className="room-main wrap" id="main-content"><PlayerSeats view={view} />
       {status === 'offline' && <p className="status-note" role="status">Reconnecting to your room…</p>}
@@ -123,7 +128,9 @@ export function RoomExperience({ id }: { id: string }) {
       <Proposal view={view} send={send} disabled={disabled} />
       {view.activity === 'hub' && <RoomHub view={view} send={send} disabled={disabled} />}
       {view.activity === 'cards' && <ConversationTable view={view} send={send} disabled={disabled} />}
-      {view.activity === 'game' && <GameStage view={view} send={send} disabled={disabled} />}
+      {view.activity === 'game' && (view.game?.kind === 'never'
+        ? <NeverStage key={view.game.id} view={view} send={send} disabled={disabled} />
+        : <GameStage view={view} send={send} disabled={disabled} />)}
     </main>
     <ChatDrawer view={view} send={send} disabled={disabled} dialog={dialog} />
   </>;

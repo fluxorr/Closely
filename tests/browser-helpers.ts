@@ -1,5 +1,5 @@
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
-import type { GameId } from '../lib/rooms/catalog';
+import { games, type GameId } from '../lib/rooms/catalog';
 import type { RoomView } from '../lib/rooms/state';
 import type { RoomAction } from '../lib/rooms/actions';
 
@@ -33,10 +33,10 @@ export async function joinPair(a: Player, b: Player) {
   for (const player of [a,b]) await expect(player.page.getByRole('heading', { name:'Here together.' })).toBeVisible();
   return { id, invite };
 }
-const names = { same: 'Same Brain', bluff: 'Bluff My Love', draw: 'Draw Me Wrong', ttt: 'Tic-Tac-Toe', rps: 'Rock Paper Scissors', potato: 'Hot Potato' };
 export async function startGame(a: Player, b: Player, kind: GameId) {
-  await a.page.getByRole('button', { name:`Play ${names[kind]}`, exact:true }).click();
-  await expect(b.page.getByRole('heading', { name:names[kind], exact:true })).toBeVisible();
+  const { title } = games[kind];
+  await a.page.getByRole('button', { name:`Play ${title}`, exact:true }).click();
+  await expect(b.page.getByRole('heading', { name:title, exact:true })).toBeVisible();
   await a.page.getByRole('button', { name:'I’m ready' }).click();
   await b.page.getByRole('button', { name:'I’m ready' }).click();
 }

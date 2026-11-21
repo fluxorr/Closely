@@ -5,7 +5,9 @@ import { games, type GameId } from '@/lib/rooms/catalog';
 export function GameCover({ kind, action, variant = 'standard' }: { kind: GameId; action: ReactNode; variant?: 'featured' | 'standard' | 'compact' }) {
   const game = games[kind];
   const Heading = variant === 'compact' ? 'h4' : 'h3';
-  const sizes = variant === 'compact' ? '110px' : '(max-width: 620px) 94vw, (max-width: 1320px) 48vw, 650px';
+  const sizes = variant === 'compact' ? '110px' : variant === 'featured'
+    ? '(max-width: 620px) 94vw, (max-width: 1320px) 52vw, 690px'
+    : '(max-width: 620px) 94vw, (max-width: 1320px) 31vw, 410px';
   return <article className={`game-cover game-cover--${variant}`}>
     <div className="game-art"><Image src={game.art} fill sizes={sizes} alt="" unoptimized={game.art.endsWith('.svg')} /></div>
     <div className="game-cover-copy">

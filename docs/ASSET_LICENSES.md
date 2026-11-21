@@ -6,6 +6,8 @@ Inventory, dimensions, byte sizes, usage and accessibility treatment are recorde
 | --- | --- | --- |
 | Ghost C vectors, custom lettering and app icons | Authorized adaptation of the supplied `Cuddling Ghost C Icon.png`. Paths authored for this project. | User-supplied reference. SVG master and named exports in `public/brand/`. |
 | Hero, invitations and three game covers | Original assets generated with Codex built-in ImageGen on 2026-11-21. | Generated for this project. Resized, stripped of metadata and compressed to WebP. [Prompts](asset-prompts/paper-world.md) |
+| Never Have I Ever cover | Original paper ballot illustration generated with Codex built-in ImageGen on 2026-11-21. | Resized to 900 × 600 and stripped of metadata. [Prompt](asset-prompts/never-have-i-ever.md) |
+| Card, lock, reveal, finish and notification cues | [SoundCN by kapishdima](https://github.com/kapishdima/soundcn). The registry entries identify all five cues as CC0. | Licence checked 2026-11-21. Original MP3 bytes extracted from the registry modules and served locally with adjustable gain. Individual source links are in the manifest. |
 | Classic game drawings and logo explorations | Original project vector artwork. | Authored SVG. No external artwork sources. |
 | Social image | Closely mark and the generated hero, composed in the repository. | Original derivative assembly. |
 | Historical Sparkle Trio sticker | Samiran De, `stick-it-up` 0.4.0. [Source](https://github.com/Sam721166/stick-it-up) | [MIT notice](licenses/STICK-IT-UP.txt). Appears in earlier QA screenshots. |
@@ -13,4 +15,4 @@ Inventory, dimensions, byte sizes, usage and accessibility treatment are recorde
 | Fraunces | The Fraunces Project Authors, Fontsource 5.3.0. [Source](https://github.com/undercasetype/Fraunces) | [SIL OFL 1.1](licenses/FRAUNCES.txt), inspected 2026-11-21. Latin variable WOFF2 loaded unchanged with `next/font/local`. |
 | Utility icons | Phosphor Icons contributors, `@phosphor-icons/react` 2.1.10. [Source](https://github.com/phosphor-icons/react) | [MIT notice](licenses/PHOSPHOR.txt). Regular outline symbols use the surrounding text color. |
 
-Cofounder and Stick It Up screenshots under `artifacts/closely` document research. The screenshots do not appear in the application. Inherited sound files and visual assets from the first version are unused by these screens.
+Cofounder and Stick It Up screenshots under `artifacts/closely` document research. The app plays audio from `public/assets/audio` after a listener enables sound effects.

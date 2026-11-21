@@ -10,9 +10,11 @@ export const questions = pgTable('closely_questions', {
   enabled: boolean('enabled').notNull().default(true),
   answerReveal: boolean('answer_reveal').notNull().default(false),
   publicPreview: boolean('public_preview').notNull().default(false),
+  mature: boolean('mature').notNull().default(false),
   answerTerms: text('answer_terms').array().notNull().default(sql`'{}'::text[]`),
 }, table => [
-  check('closely_questions_kind_check', sql`${table.kind} in ('card', 'same', 'bluff', 'draw')`),
+  check('closely_questions_kind_check', sql`${table.kind} in ('card', 'same', 'bluff', 'draw', 'never')`),
+  check('closely_questions_mature_check', sql`not ${table.mature} or ${table.kind} = 'never'`),
   check('closely_questions_category_check', sql`(${table.kind} = 'card' and ${table.category} is not null and ${table.category} in ('deep', 'fun', 'memory', 'action', 'spicy', 'naughty', 'game')) or (${table.kind} <> 'card' and ${table.category} is null)`),
   check('closely_questions_text_check', sql`${table.text} ~ '[^[:space:]]' and length(${table.text}) <= 800 and (${table.kind} <> 'draw' or length(${table.text}) <= 100)`),
   check('closely_questions_reveal_check', sql`not ${table.answerReveal} or (${table.kind} = 'card' and ${table.category} in ('deep', 'fun', 'memory'))`),

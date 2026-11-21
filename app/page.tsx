@@ -7,6 +7,7 @@ import { Brand } from '@/components/Brand';
 import { EntryButton } from '@/components/RoomEntry';
 import { GameCover } from '@/components/GameCover';
 import { PreviewCard } from '@/components/PreviewCard';
+import { SoundControl } from '@/components/SoundControl';
 import { games, newGames } from '@/lib/rooms/catalog';
 
 const steps = [
@@ -18,7 +19,7 @@ export default function Home() {
   return <>
     <header className="site-header wrap"><Brand />
       <nav aria-label="Main navigation"><a href="#cards">Cards</a><a href="#games">Games</a><a href="#how">How it works</a></nav>
-      <EntryButton kind="create" className="button small primary" />
+      <div className="actions"><SoundControl /><EntryButton kind="create" className="button small primary" /></div>
     </header>
     <main id="main-content" className="wrap landing">
       <section className="hero" aria-labelledby="hero-title">

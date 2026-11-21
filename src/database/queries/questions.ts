@@ -24,8 +24,21 @@ export const questionBank: QuestionBank = {
     if (next.priority === 2) return 'exhausted';
     return { id: next.id, category: next.category, text: next.text };
   },
-  async game(kind, seed, limit) {
+  async game(kind, seed, limit, avoid = []) {
     const pivot = questionPivot(seed);
+    if (kind === 'never') {
+      const played = avoid.length ? sql`(${JSON.stringify(avoid)}::jsonb ? id::text),` : sql.empty();
+      return queryRows<GameRow & { mature: boolean }>(sql`
+        select id, text, answer_terms as "answerTerms", mature
+        from (
+          select id, text, answer_terms, mature,
+            row_number() over (partition by mature order by ${played} id < ${pivot}, id) as position
+          from ${questions} where kind = 'never' and enabled
+        ) as candidates
+        where position <= ${limit}
+        order by mature, position
+      `);
+    }
     return queryRows<GameRow>(sql`
       select id, text, answer_terms as "answerTerms"
       from (

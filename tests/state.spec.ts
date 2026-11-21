@@ -97,3 +97,48 @@ test('passing removes sealed answers and legacy activity returns the room to its
   expect(room.history).toHaveLength(1);
   expect(room.players[1]?.credential).toBe('guest2');
 });
+
+test('Never Have I Ever has no clock, seals votes, and requires two After Hours opt-ins', async () => {
+  const mild = { id: 'everyday', text: 'picked the music on a date', answerTerms: [] };
+  const bold = { id: 'bolder', text: 'said what I really wanted', answerTerms: [], mature: true };
+  const bank = questionBank([], [mild, { ...mild, id: 'second' }, bold]);
+  const { room, mutate } = pair(bank);
+
+  expect(await mutate(0, { type: 'game', game: 'never' })).toBe(true);
+  const game = room.match!;
+  expect(await mutate(0, { type: 'ready', afterHours: true })).toBe(true);
+  expect(gameView(game, 1).prompt).toBeNull();
+  expect(await mutate(1, { type: 'ready' })).toBe(true);
+  expect(game.phase).toBe('playing');
+  expect(game.deadline).toBeNull();
+  expect(tickMatch(game, 600000)).toBe(false);
+
+  expect(await mutate(0, { type: 'never-answer', choice: 'have' })).toBe(true);
+  expect(gameView(game, 1)).toMatchObject({ locked: [true, false], answers: null, ownAnswer: null });
+  expect(await mutate(0, { type: 'never-answer', choice: 'never' })).toBe(false);
+  expect(await mutate(1, { type: 'never-pass' })).toBe(true);
+  expect(gameView(game, 0).answers).toEqual([null, null]);
+  await mutate(0, { type: 'ready' });
+  await mutate(1, { type: 'ready' });
+  expect(gameView(game, 1).never?.mature).toBe(false);
+
+  await mutate(0, { type: 'never-answer', choice: 'have' });
+  await mutate(1, { type: 'never-answer', choice: 'never' });
+  expect(gameView(game, 0).answers).toEqual(['have', 'never']);
+  expect(gameView(game, 1).answers).toEqual(['have', 'never']);
+  await mutate(0, { type: 'ready' });
+  await mutate(1, { type: 'ready' });
+  expect(gameView(game, 1)).toMatchObject({ phase: 'results', answers: null, never: { revealed: 1 } });
+
+  expect(await mutate(0, { type: 'play-again' })).toBe(true);
+  const rematch = room.match!;
+  expect(rematch.ready).toEqual([false, false]);
+  await mutate(0, { type: 'ready', afterHours: true });
+  await mutate(1, { type: 'ready', afterHours: true });
+  expect(gameView(rematch, 0).prompt).toBe(mild.text);
+  await mutate(0, { type: 'never-answer', choice: 'never' });
+  await mutate(1, { type: 'never-answer', choice: 'never' });
+  await mutate(0, { type: 'ready' });
+  await mutate(1, { type: 'ready' });
+  expect(gameView(rematch, 0)).toMatchObject({ phase: 'playing', prompt: bold.text, never: { mature: true } });
+});

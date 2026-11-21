@@ -5,8 +5,8 @@ import type { GameQuestion } from './questions';
 export type Seat = 0 | 1;
 type Pair<T> = [T, T];
 type Phase = 'lobby' | 'ready' | 'countdown' | 'playing' | 'resolving' | 'results' | 'rematch';
-export const roundLimits = { same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
-const times = { same: 15, bluff: 50, draw: 75, ttt: 120, rps: 30, potato: 14 } satisfies Record<GameId, number>;
+export const roundLimits = { never: 8, same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
+const times = { same: 15, bluff: 50, draw: 75, ttt: 120, rps: 30, potato: 14 } satisfies Record<Exclude<GameId, 'never'>, number>;
 const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 export const other = (seat: Seat): Seat => seat === 0 ? 1 : 0;
 const actor = (g: Match): Seat => ((g.round + g.seed) % 2) as Seat;
@@ -20,9 +20,17 @@ export interface Match {
   board: (Seat | null)[]; turn: Seat; winner: Seat | null; winningLine: number[] | null;
   holder: Seat; passAt: number; notice: string; matched: boolean;
   questions?: GameQuestion[];
+  afterHours?: Pair<boolean>;
+  afterHoursQuestions?: GameQuestion[];
+  revealedRounds?: number;
 }
 export function newMatch(kind: GameId, id: string, seed: number, phase: Phase = 'lobby', questions: GameQuestion[] = []): Match {
-  return { id, kind, seed, phase, questions, round: 0, deadline: null, ready: [false,false], scores: [0,0], streak: 0, answers: [null,null], story: null, guess: null, drawing: [], misses: 0, board: Array(9).fill(null), turn: 0, winner: null, winningLine: null, holder: (seed % 2) as Seat, passAt: 0, notice: '', matched: false };
+  const match: Match = { id, kind, seed, phase, questions, round: 0, deadline: null, ready: [false,false], scores: [0,0], streak: 0, answers: [null,null], story: null, guess: null, drawing: [], misses: 0, board: Array(9).fill(null), turn: 0, winner: null, winningLine: null, holder: (seed % 2) as Seat, passAt: 0, notice: '', matched: false };
+  if (kind !== 'never') return match;
+  return {
+    ...match, questions: questions.filter(question => !question.mature), afterHours: [false, false],
+    afterHoursQuestions: questions.filter(question => question.mature), revealedRounds: 0,
+  };
 }
 const totalRounds = (g: Match) => g.questions?.length || roundLimits[g.kind];
 const guessWords = (text: string) => normalize(text).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/gu, ' ').trim();
@@ -35,7 +43,7 @@ function resolve(g: Match, text: string) {
 }
 function startRound(g: Match, now: number) {
   g.phase = 'playing';
-  g.deadline = now + (times[g.kind] + (g.kind === 'potato' ? g.seed % 8 : 0)) * 1000;
+  g.deadline = g.kind === 'never' ? null : now + (times[g.kind] + (g.kind === 'potato' ? g.seed % 8 : 0)) * 1000;
   g.passAt = now + 500;
 }
 export function tickMatch(g: Match, now: number) {
@@ -58,6 +66,8 @@ export function tickMatch(g: Match, now: number) {
 export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number): boolean {
   if (action.type === 'ready' && ['lobby','ready','rematch','resolving'].includes(g.phase)) {
     if (g.ready[seat]) return false;
+    const choosingDeck = g.kind === 'never' && g.phase !== 'resolving';
+    if (choosingDeck && g.afterHours) g.afterHours[seat] = action.afterHours === true;
     g.ready[seat] = true;
     if (g.phase === 'lobby') g.phase = 'ready';
     if (!g.ready.every(Boolean)) return true;
@@ -75,12 +85,35 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
       g.matched = false;
       g.notice = '';
     }
+    if (g.kind === 'never') {
+      if (choosingDeck && g.afterHours?.every(Boolean)) {
+        const mature = g.afterHoursQuestions ?? [];
+        g.questions = g.questions?.map((question, i) => i % 2 === 1 ? mature[Math.floor(i / 2)] ?? question : question);
+      }
+      delete g.afterHoursQuestions;
+      startRound(g, now);
+      return true;
+    }
     g.phase = 'countdown';
     g.deadline = now + 2500;
     return true;
   }
   if (g.phase !== 'playing') return false;
   switch (g.kind) {
+    case 'never': {
+      if (action.type === 'never-pass') {
+        g.answers = [null, null];
+        resolve(g, 'Prompt passed.');
+        return true;
+      }
+      if (action.type !== 'never-answer' || g.answers[seat] !== null) return false;
+      g.answers[seat] = action.choice;
+      if (!g.answers.every(Boolean)) return true;
+      g.revealedRounds = (g.revealedRounds ?? 0) + 1;
+      const have = g.answers.filter(answer => answer === 'have').length;
+      resolve(g, have === 2 ? 'You both have a story.' : have === 1 ? 'Someone has a story.' : 'A first for both of you.');
+      return true;
+    }
     case 'same': {
       if (action.type !== 'answer' || g.answers[seat] !== null) return false;
       g.answers[seat] = action.text;
@@ -171,12 +204,13 @@ export function gameView(g: Match, seat: Seat) {
   return {
     id: g.id, kind: g.kind, phase: g.phase, round: g.round, total: totalRounds(g), deadline: g.deadline,
     ready: g.ready, scores: g.scores, streak: g.streak, locked: g.answers.map(Boolean),
-    answers: done ? g.answers : null, ownAnswer: g.answers[seat], story: g.story,
+    answers: done && (g.kind !== 'never' || g.phase === 'resolving') ? g.answers : null, ownAnswer: g.kind === 'never' && g.phase === 'results' ? null : g.answers[seat], story: g.story,
     instruction: g.kind === 'bluff' && visible && (myTurn || done) ? instruction(g) : null,
     prompt: visible && (g.kind !== 'draw' || myTurn || done) ? prompt : null,
     guess: g.guess, misses: g.misses, drawing: g.drawing, actor: actor(g),
     board: g.board, turn: g.turn, winner: g.winner, winningLine: g.winningLine, holder: g.holder,
     passAt: g.passAt, notice: g.notice, matched: g.matched,
+    never: g.kind === 'never' ? { mature: visible && g.questions?.[g.round]?.mature === true, revealed: g.revealedRounds ?? 0 } : undefined,
   };
 }
 export type GameView = ReturnType<typeof gameView>;

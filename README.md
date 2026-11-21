@@ -1,6 +1,6 @@
 # Closely
 
-A private room for two. Share conversation cards, lock answers and reveal them together, chat, and play Same Brain, Bluff My Love, Draw Me Wrong, or three classic games.
+A private room for two. Share conversation cards, lock answers and reveal them together, chat, and play Never Have I Ever, Same Brain, Bluff My Love, Draw Me Wrong, or three classic games.
 
 ## Run locally
 

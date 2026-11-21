@@ -55,9 +55,9 @@ function record(s: RoomState, outcome: HistoryEntry['outcome'], now: number) {
   s.history.push({ id: card.cardId, category, cycle: s.decks[category]?.cycle ?? 0, outcome, at: now });
   card.phase = outcome;
 }
-async function startMatch(kind: GameId, seed: string, key: string, bank: QuestionBank, phase: 'lobby' | 'rematch') {
-  const questions = usesPrompts(kind) ? await bank.game(kind, seed, roundLimits[kind]) : [];
-  if (usesPrompts(kind) && !questions.length) return null;
+async function startMatch(kind: GameId, seed: string, key: string, bank: QuestionBank, phase: 'lobby' | 'rematch', avoid?: string[]) {
+  const questions = usesPrompts(kind) ? await bank.game(kind, seed, roundLimits[kind], avoid) : [];
+  if (usesPrompts(kind) && !questions.some(question => !question.mature)) return null;
   return newMatch(kind, key, Number.parseInt(digest(seed).slice(0,8), 16), phase, questions);
 }
 async function executeTarget(s: RoomState, target: Target, roomId: string, key: string, now: number, bank: QuestionBank): Promise<ActionResult> {
@@ -172,10 +172,11 @@ export async function applyRoomAction(s: RoomState, seat: Seat, action: RoomActi
       return true;
     case 'play-again': {
       if (s.match?.phase !== 'results') return false;
-      const match = await startMatch(s.match.kind, `${roomId}:${key}`, key, bank, 'rematch');
+      const avoid = s.match.kind === 'never' ? s.match.questions?.map(question => question.id) : undefined;
+      const match = await startMatch(s.match.kind, `${roomId}:${key}`, key, bank, 'rematch', avoid);
       if (!match) return 'missing-questions';
       s.match = match;
-      match.ready[seat] = true;
+      if (match.kind !== 'never') match.ready[seat] = true;
       return true;
     }
     default:

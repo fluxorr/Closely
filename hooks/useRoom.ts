@@ -5,7 +5,7 @@ import type { RoomAction } from '@/lib/rooms/actions';
 import { clearRoomHandoff, initialRoom, type RoomSnapshot } from './roomHandoff';
 
 type Status = 'loading' | 'join' | 'ready' | 'expired' | 'invalid' | 'offline';
-const retryable = new Set(['ready', 'answer', 'card-answer', 'choice', 'stroke', 'drawing-guess']);
+const retryable = new Set(['ready', 'answer', 'card-answer', 'never-answer', 'never-pass', 'choice', 'stroke', 'drawing-guess']);
 export function useRoom(id: string) {
   const base = `/api/rooms/${encodeURIComponent(id)}`;
   const [view, setView] = useState(() => initialRoom(id));

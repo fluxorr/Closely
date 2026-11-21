@@ -3,7 +3,7 @@ import { randomCategories, writtenCategories, type CardCategory, type DeckCatego
 
 export type CardMode = 'talk' | 'reveal';
 export interface CardQuestion { id: string; category: CardCategory; text: string }
-export interface GameQuestion { id: string; text: string; answerTerms: string[] }
+export interface GameQuestion { id: string; text: string; answerTerms: string[]; mature?: boolean }
 export interface CardSelection {
   category: DeckCategory;
   mode: CardMode;
@@ -12,7 +12,7 @@ export interface CardSelection {
 }
 export interface QuestionBank {
   card(selection: CardSelection): Promise<CardQuestion | 'exhausted' | null>;
-  game(kind: PromptGame, seed: string, limit: number): Promise<GameQuestion[]>;
+  game(kind: PromptGame, seed: string, limit: number, avoid?: readonly string[]): Promise<GameQuestion[]>;
 }
 
 export function selectionCategories(category: DeckCategory, mode: CardMode): readonly CardCategory[] {

@@ -3,6 +3,7 @@
 import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowCounterClockwise';
 import { useState } from 'react';
 import Image from 'next/image';
+import { playSound } from '@/lib/audio/sound';
 
 export function PreviewCard() {
   const [open, setOpen] = useState(false);
@@ -11,6 +12,7 @@ export function PreviewCard() {
   const [failed, setFailed] = useState(false);
 
   async function turn() {
+    void playSound('card');
     if (open) { setOpen(false); return; }
     setOpen(true);
     if (prompt || loading) return;

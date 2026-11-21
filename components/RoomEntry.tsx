@@ -5,6 +5,7 @@ import { XIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { handOffRoom, type RoomSnapshot } from '@/hooks/roomHandoff';
+import { playSound } from '@/lib/audio/sound';
 
 export function AvatarChoice({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   return <fieldset className="avatar-choices"><legend>Choose your color</legend>
@@ -42,6 +43,7 @@ export function EntryForm({ kind, roomId, onJoined }: { kind: 'create' | 'join';
       const res = await fetch(kind === 'create' ? '/api/rooms' : '/api/rooms/join', { method: 'POST', body: JSON.stringify({ name, avatar, ...(kind === 'join' ? invite : {}) }), headers: { 'Content-Type': 'application/json' } });
       const result = await res.json();
       if (!res.ok) { setError(result.error ?? 'The room couldn’t open. Try again.'); return; }
+      void playSound('notice');
       if (onJoined) onJoined(result.view);
       else {
         handOffRoom(result.view);

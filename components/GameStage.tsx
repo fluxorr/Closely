@@ -17,11 +17,12 @@ import { DrawingBoard } from './DrawingBoard';
 function useClock(serverNow: number, deadline: number | null) {
   const [estimated, setEstimated] = useState(serverNow);
   useEffect(() => {
+    if (deadline === null) return;
     const localStart = performance.now();
     const update = () => setEstimated(serverNow + performance.now() - localStart);
     const timer = setInterval(update, 150);
     return () => clearInterval(timer);
-  }, [serverNow]);
+  }, [deadline, serverNow]);
   const now = Math.max(serverNow, estimated);
   return { now, seconds: deadline === null ? null : Math.max(0, Math.ceil((deadline - now) / 1000)) };
 }
