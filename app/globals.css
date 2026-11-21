@@ -428,3 +428,13 @@ svg { flex-shrink: 0; }
   .never-prompt, .never-stamp, .never-table[data-outcome="match"] .never-characters img { animation: none; }
   .never-picks button { transition: none; }
 }
+
+@media (max-width:430px) {
+  .room-header .actions { flex-wrap:nowrap; flex-shrink:0; }
+  .room-header .brand { min-width:0; }
+  .room-header .brand img { max-width:100%; }
+}
+@media (max-width:385px) {
+  .room-header .room-hub-button, .room-header .room-chat-button { min-width:44px; min-height:44px; }
+  .room-header .room-hub-button span, .room-header .room-chat-button span { display:none; }
+}

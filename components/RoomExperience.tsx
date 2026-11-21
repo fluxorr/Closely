@@ -120,8 +120,8 @@ export function RoomExperience({ id }: { id: string }) {
     </div></section></main>;
   return <>
     <header className="room-header wrap"><Brand /><div className="actions">
-      {view.activity === 'hub' ? <a className="button small secondary" href="#games">Games <ArrowDownIcon size={13} aria-hidden /></a> : <button className="button small secondary" disabled={disabled || !!view.proposal} onClick={() => void send({ type: 'return' })}><ArrowLeftIcon size={16} aria-hidden /> Room hub</button>}
-      <button className="button small secondary" onClick={() => dialog.current?.showModal()}><ChatCircleIcon size={17} aria-hidden /> Chat</button>
+      {view.activity === 'hub' ? <a className="button small secondary" href="#games">Games <ArrowDownIcon size={13} aria-hidden /></a> : <button className="button small secondary room-hub-button" aria-label="Room hub" disabled={disabled || !!view.proposal} onClick={() => void send({ type: 'return' })}><ArrowLeftIcon size={16} aria-hidden /> <span>Room hub</span></button>}
+      <button className="button small secondary room-chat-button" aria-label="Chat" onClick={() => dialog.current?.showModal()}><ChatCircleIcon size={17} aria-hidden /> <span>Chat</span></button>
       <SoundControl />
     </div></header>
     <main className="room-main wrap" id="main-content"><PlayerSeats view={view} />
