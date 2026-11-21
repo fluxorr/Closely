@@ -429,6 +429,42 @@ svg { flex-shrink: 0; }
   .never-picks button { transition: none; }
 }
 
+.auction-game { display:grid; gap:16px; min-width:0; }
+.auction-title { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:12px; }
+.auction-title h1 { font-size:clamp(2.3rem,6vw,4.6rem); }
+.auction-purse { background:#f6d69a; border:1px solid #9f6844; color:#582f29; border-radius:999px; padding:8px 15px; font-weight:800; }
+.auction-stage { --auction-gold:#ffda92; display:grid; grid-template-columns:1.15fr 1fr; gap:clamp(14px,3vw,34px); position:relative; isolation:isolate; overflow:hidden; padding:clamp(34px,6vw,64px) clamp(17px,4vw,38px) clamp(17px,4vw,38px); background:radial-gradient(ellipse at 50% 0%,#a63e45,#522331 75%); color:#fff4db; border:2px solid #542937; border-radius:27px; box-shadow:0 5px #a95c55; }
+.auction-curtain { position:absolute; inset:0 0 auto; height:24px; background:radial-gradient(ellipse 28px 25px at 28px -6px,#92283a 95%,#ffce80 98%,transparent) 0 0/56px 26px repeat-x; z-index:-1; }
+.auction-stars { position:absolute; inset:26px 12px auto; display:flex; justify-content:space-between; color:#ffcd88; opacity:.75; z-index:-1; animation:auction-glimmer 3s ease-in-out 2; }
+.auction-stars span { transform:translateY(-9px); }
+.auction-ticket { position:relative; display:grid; justify-items:start; align-content:center; gap:10px; padding:clamp(17px,3vw,33px); min-width:0; background:#fff0ca; color:#442829; border:1px solid #f4be76; border-radius:17px 7px 17px 7px; box-shadow:4px 5px #d88468; animation:auction-ticket-in 330ms cubic-bezier(.22,1,.36,1) both; }
+.auction-lot-meta { display:flex; gap:10px; justify-content:space-between; align-items:center; width:100%; font-weight:800; font-size:.86rem; }
+.auction-clock { background:#662737; color:#fff1cc; border-radius:999px; padding:4px 9px; font-variant-numeric:tabular-nums; }
+.auction-ticket h2 { font-size:clamp(2rem,4vw,3.6rem); }
+.auction-sticker { width:65px; height:65px; padding:13px; background:#fad080; color:#662737; border:2px double #a0583b; border-radius:36% 46% 41% 46%; transform:rotate(-9deg); }
+.auction-wish-stamp { transform:rotate(-3deg); color:#73283a; border:1px dashed; padding:4px 8px; font-size:.78rem; font-weight:800; }
+.auction-paddle { min-width:0; display:grid; align-content:center; justify-items:start; gap:12px; padding:clamp(13px,3vw,26px); border:1px solid #dd8a7c; border-radius:7px 17px 7px 17px; background:#4a2330; }
+.auction-paddle h2 { font-size:clamp(1.8rem,3.5vw,3rem); color:var(--auction-gold); }
+.auction-bids { display:flex; flex-wrap:wrap; gap:8px; }
+.auction-bids button { min-width:44px; min-height:44px; border-radius:50%; background:#ffd181; border:3px double #8d4b36; color:#542632; font-weight:900; box-shadow:0 3px #b06546; transition:transform 140ms; }
+.auction-bids button:not(:disabled):hover { transform:translateY(-3px) rotate(-7deg); }
+.auction-pass { text-decoration:underline; min-height:44px; }
+.auction-reveal { display:grid; gap:12px; animation:auction-ticket-in 270ms ease-out both; }
+.auction-bid-stamps { display:flex; gap:9px; flex-wrap:wrap; }
+.auction-bid-stamps span { border:1px dashed #f1b17d; padding:4px 8px; border-radius:4px; overflow-wrap:anywhere; }
+.auction-interlude { grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:clamp(14px,4vw,40px); }
+.auction-interlude img { border-radius:14px; width:100%; height:auto; }
+.auction-interlude > div { display:grid; gap:14px; justify-items:start; }
+.auction-interlude ul { padding:0; margin:0; display:grid; gap:5px; width:100%; list-style:none; }
+.auction-interlude li { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; border-bottom:1px dashed #dfa987; }
+.auction-start { background:#ffda92; color:#542632; }
+.auction-wishlist { display:flex; align-items:center; gap:8px 14px; flex-wrap:wrap; border:1px dashed #b47662; padding:10px 15px; border-radius:11px; background:#f9e9da; }
+.auction-wishlist span { color:#653346; overflow-wrap:anywhere; }
+.auction-stage :focus-visible { outline-color:#fff4cb; }
+@keyframes auction-ticket-in { from { opacity:.65; transform:translateY(10px) rotate(-2deg); } }
+@keyframes auction-glimmer { 50% { opacity:.25; transform:translateY(3px); } }
+@media (max-width:680px) { .auction-stage,.auction-interlude { grid-template-columns:minmax(0,1fr); } }
+@media (prefers-reduced-motion:reduce) { .auction-stage * { animation:none!important; transition:none!important; } }
 @media (max-width:430px) {
   .room-header .actions { flex-wrap:nowrap; flex-shrink:0; }
   .room-header .brand { min-width:0; }

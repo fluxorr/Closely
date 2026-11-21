@@ -24,6 +24,7 @@ import { EntryForm } from './RoomEntry';
 import { SoundControl } from './SoundControl';
 
 const GameStage = dynamic(() => import('./GameStage'), { loading: () => <div className="game-paper" role="status">Setting the stage…</div> });
+const AuctionStage = dynamic(() => import('./AuctionStage'), { loading: () => <div className="game-paper" role="status">Opening the auction…</div> });
 const NeverStage = dynamic(() => import('./NeverStage'), { loading: () => <div className="game-paper" role="status">Setting the stage…</div> });
 
 function initial(name: string) { return Array.from(name)[0]?.toLocaleUpperCase() ?? '?'; }
@@ -133,7 +134,9 @@ export function RoomExperience({ id }: { id: string }) {
       {view.activity === 'cards' && <ConversationTable view={view} send={send} disabled={disabled} />}
       {view.activity === 'game' && (view.game?.kind === 'never'
         ? <NeverStage key={view.game.id} view={view} send={send} disabled={disabled} />
-        : <GameStage view={view} send={send} disabled={disabled} />)}
+        : view.game?.kind === 'auction'
+          ? <AuctionStage key={view.game.id} view={view} send={send} disabled={disabled} />
+          : <GameStage view={view} send={send} disabled={disabled} />)}
     </main>
     <ChatDrawer view={view} send={send} disabled={disabled} dialog={dialog} />
   </>;

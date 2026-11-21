@@ -1,3 +1,4 @@
+import { auctionRevealMs, auctionRounds, auctionView, bidWindow, newAuction, settleAuction, type Auction } from './auction';
 import type { RoomAction, Stroke } from './actions';
 import type { GameId } from './catalog';
 import type { GameQuestion } from './questions';
@@ -5,8 +6,8 @@ import type { GameQuestion } from './questions';
 export type Seat = 0 | 1;
 type Pair<T> = [T, T];
 type Phase = 'lobby' | 'ready' | 'countdown' | 'playing' | 'resolving' | 'results' | 'rematch';
-export const roundLimits = { never: 8, same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
-const times = { same: 15, bluff: 50, draw: 75, ttt: 120, rps: 30, potato: 14 } satisfies Record<Exclude<GameId, 'never'>, number>;
+export const roundLimits = { auction: auctionRounds, never: 8, same: 5, bluff: 6, draw: 4, ttt: 1, rps: 1, potato: 1 } satisfies Record<GameId, number>;
+const times = { same: 15, bluff: 50, draw: 75, ttt: 120, rps: 30, potato: 14 } satisfies Record<Exclude<GameId, 'never' | 'auction'>, number>;
 const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 export const other = (seat: Seat): Seat => seat === 0 ? 1 : 0;
 const actor = (g: Match): Seat => ((g.round + g.seed) % 2) as Seat;
@@ -19,6 +20,7 @@ export interface Match {
   story: string | null; guess: string | null; drawing: Stroke[]; misses: number;
   board: (Seat | null)[]; turn: Seat; winner: Seat | null; winningLine: number[] | null;
   holder: Seat; passAt: number; notice: string; matched: boolean;
+  auction?: Auction;
   questions?: GameQuestion[];
   afterHours?: Pair<boolean>;
   afterHoursQuestions?: GameQuestion[];
@@ -26,6 +28,7 @@ export interface Match {
 }
 export function newMatch(kind: GameId, id: string, seed: number, phase: Phase = 'lobby', questions: GameQuestion[] = []): Match {
   const match: Match = { id, kind, seed, phase, questions, round: 0, deadline: null, ready: [false,false], scores: [0,0], streak: 0, answers: [null,null], story: null, guess: null, drawing: [], misses: 0, board: Array(9).fill(null), turn: 0, winner: null, winningLine: null, holder: (seed % 2) as Seat, passAt: 0, notice: '', matched: false };
+  if (kind === 'auction') return { ...match, auction: newAuction(seed) };
   if (kind !== 'never') return match;
   return {
     ...match, questions: questions.filter(question => !question.mature), afterHours: [false, false],
@@ -45,7 +48,7 @@ function resolve(g: Match, text: string, deadline: number | null = null) {
 }
 function startRound(g: Match, now: number) {
   g.phase = 'playing';
-  g.deadline = g.kind === 'never' ? null : now + (times[g.kind] + (g.kind === 'potato' ? g.seed % 8 : 0)) * 1000;
+  g.deadline = g.kind === 'never' ? null : g.kind === 'auction' ? now + bidWindow : now + (times[g.kind] + (g.kind === 'potato' ? g.seed % 8 : 0)) * 1000;
   g.passAt = now + 500;
 }
 function resetRound(g: Match) {
@@ -73,6 +76,21 @@ export function tickMatch(g: Match, now: number) {
     return true;
   }
   if (g.deadline === null || now < g.deadline) return false;
+  if (g.auction && g.phase === 'playing') {
+    resolve(g, settleAuction(g.auction, g.round, (g.round % 2) as Seat), now + auctionRevealMs);
+    return true;
+  }
+  if (g.auction && g.phase === 'resolving') {
+    if (g.round + 1 === totalRounds(g) || !g.auction.budget) {
+      g.phase = 'results';
+      g.deadline = null;
+    } else {
+      resetRound(g);
+      g.auction.bids = [null, null];
+      startRound(g, now);
+    }
+    return true;
+  }
   if (g.phase === 'countdown') {
     startRound(g, g.deadline);
     tickMatch(g, now);
@@ -89,6 +107,18 @@ export function tickMatch(g: Match, now: number) {
 }
 
 export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number): boolean {
+  if (g.auction) {
+    if (action.type === 'ready' && (g.phase === 'lobby' || g.phase === 'rematch')) {
+      startRound(g, now);
+      return true;
+    }
+    if (g.phase !== 'playing' || action.type !== 'auction-bid' || g.auction.bids[seat] !== null || action.coins > g.auction.budget) return false;
+    g.auction.bids[seat] = action.coins;
+    if (g.auction.bids.every(bid => bid !== null)) {
+      resolve(g, settleAuction(g.auction, g.round, (g.round % 2) as Seat), now + auctionRevealMs);
+    }
+    return true;
+  }
   if (action.type === 'ready' && ['lobby','ready','rematch','resolving'].includes(g.phase)) {
     if (g.ready[seat] || (g.kind === 'never' && g.phase === 'resolving')) return false;
     const choosingDeck = g.kind === 'never';
@@ -118,6 +148,7 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
   }
   if (g.phase !== 'playing') return false;
   switch (g.kind) {
+    case 'auction': return false;
     case 'never': {
       if (action.type === 'never-pass') {
         g.answers = [null, null];
@@ -228,6 +259,7 @@ export function gameView(g: Match, seat: Seat) {
     guess: g.guess, misses: g.misses, drawing: g.drawing, actor: actor(g),
     board: g.board, turn: g.turn, winner: g.winner, winningLine: g.winningLine, holder: g.holder,
     passAt: g.passAt, notice: g.notice, matched: g.matched,
+    auction: g.auction ? auctionView(g.auction, g.round, seat, g.phase === 'resolving', g.phase === 'results') : undefined,
     never: g.kind === 'never' ? { mature: visible && g.questions?.[g.round]?.mature === true, revealed: g.revealedRounds ?? 0 } : undefined,
   };
 }

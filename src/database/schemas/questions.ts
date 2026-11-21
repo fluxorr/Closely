@@ -1,10 +1,10 @@
 import { sql } from 'drizzle-orm';
 import { boolean, check, index, pgTable, text, uuid } from 'drizzle-orm/pg-core';
-import { cardCategories, newGames } from '@/lib/rooms/catalog';
+import { cardCategories, promptGames } from '@/lib/rooms/catalog';
 
 export const questions = pgTable('closely_questions', {
   id: uuid('id').defaultRandom().primaryKey(),
-  kind: text('kind', { enum: ['card', ...newGames] }).notNull(),
+  kind: text('kind', { enum: ['card', ...promptGames] }).notNull(),
   category: text('category', { enum: cardCategories }),
   text: text('text').notNull(),
   enabled: boolean('enabled').notNull().default(true),

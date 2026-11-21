@@ -36,6 +36,7 @@ export const roomAction = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ready'), afterHours: z.boolean().optional() }),
   z.object({ type: z.literal('never-answer'), choice: z.enum(['have', 'never']) }),
   z.object({ type: z.literal('never-pass') }),
+  z.object({ type: z.literal('auction-bid'), coins: z.number().int().min(0).max(4) }),
   z.object({ type: z.literal('play-again') }),
   z.object({ type: z.literal('answer'), text: clean(120) }),
   z.object({ type: z.literal('story'), text: clean(600) }),

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { makeRoom, applyRoomAction, roomView, resetLegacyActivity } from '../lib/rooms/state';
-import { playMatch, tickMatch, gameView } from '../lib/rooms/game';
+import { newMatch, playMatch, tickMatch, gameView } from '../lib/rooms/game';
 import { selectionCategories, type CardQuestion, type GameQuestion, type QuestionBank } from '../lib/rooms/questions';
 
 const player = { name:'Guest', avatar:1, credential:'guest', joinedAt:0 };
@@ -140,4 +140,20 @@ test('Never Have I Ever has no clock, seals votes, and requires two After Hours 
   await mutate(1, { type: 'never-answer', choice: 'never' });
   expect(tickMatch(rematch, 3000)).toBe(true);
   expect(gameView(rematch, 0)).toMatchObject({ phase: 'playing', prompt: bold.text, never: { mature: true } });
+});
+
+test('auction seals bids, charges the shared purse once, and advances without a vote', () => {
+  const game = newMatch('auction', 'auction-test', 42);
+  expect(playMatch(game, 0, { type: 'ready' }, 100)).toBe(true);
+  expect(playMatch(game, 0, { type: 'auction-bid', coins: 3 }, 200)).toBe(true);
+  expect(gameView(game, 1).auction).toMatchObject({ ownBid: null, bids: null, budget: 12 });
+  expect(gameView(game, 1).auction?.wishlist).not.toEqual(gameView(game, 0).auction?.wishlist);
+  expect(playMatch(game, 1, { type: 'auction-bid', coins: 2 }, 300)).toBe(true);
+  expect(gameView(game, 1).auction).toMatchObject({ bids: [3, 2], budget: 9, sale: { winner: 0, price: 3 } });
+  expect(tickMatch(game, 3099)).toBe(false);
+  expect(tickMatch(game, 3100)).toBe(true);
+  expect(game.round).toBe(1);
+  expect(playMatch(game, 0, { type: 'auction-bid', coins: 2 }, 3200)).toBe(true);
+  expect(tickMatch(game, 18100)).toBe(true);
+  expect(gameView(game, 1).auction).toMatchObject({ bids: [2, 0], budget: 7 });
 });

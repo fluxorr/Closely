@@ -411,6 +411,23 @@
       "duration": 0.2,
       "handling": "Low-pass filtered, faded and gain adjusted.",
       "status": "reviewed"
+    },
+    {
+      "id": "auction",
+      "file": "public/assets/games/auction.webp",
+      "bytes": 104698,
+      "dimensions": [
+        900,
+        600
+      ],
+      "usage": "Date Night Auction cover and stage",
+      "source": "generated",
+      "decorative": true,
+      "generator": "Codex built-in ImageGen",
+      "generatedOn": "2026-11-21",
+      "masterId": "e633d656-0b5d-4853-a6d4-1c3bee01cf72",
+      "promptFile": "docs/asset-prompts/date-night-auction.md",
+      "status": "reviewed"
     }
   ]
 }
