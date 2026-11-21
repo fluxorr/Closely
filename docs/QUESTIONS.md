@@ -21,3 +21,5 @@ The [Never Have I Ever import](../src/database/seeds/0002_never_have_i_ever.sql)
 Once a card is dealt or a match starts, it keeps the selected text. Edits and disabling apply to later draws and matches. Never Have I Ever uses up to eight prompts, Same Brain uses up to five, Bluff My Love uses up to six, and Draw Me Wrong uses up to four. A smaller pool produces a shorter match. The three classic games are available with an empty table.
 
 For the full local browser suite, use an isolated test database and add at least three enabled Fun cards marked for Answer & Reveal, plus five Same Brain prompts, six Bluff My Love prompts, and four Draw Me Wrong prompts. The standalone state tests create their own fixtures.
+
+Run the [arcade deck import](../src/database/seeds/0003_arcade_prompts.sql) to publish 20 prompts each for Same Brain, Bluff My Love, and Draw Me Wrong. It can be rerun and preserves existing questions and edits.
