@@ -74,7 +74,8 @@ export default function GameStage({ view, send, disabled }: { view: RoomView; se
   const countdown = game.phase === 'countdown';
   const tied = game.scores[0] === game.scores[1];
   const win = game.scores[view.seat] > game.scores[1-view.seat];
-  return <section className="game-stage" aria-labelledby="game-title">
+  const arcade = game.kind === 'same' || game.kind === 'bluff' || game.kind === 'draw';
+  return <section className="game-stage" data-arcade={arcade ? game.kind : undefined} aria-labelledby="game-title">
     <div className="room-title"><div><p className="eyebrow">{metadata.type} game</p><h1 id="game-title">{metadata.title}</h1></div><div className="game-hud"><span className="tag">Round {game.round + 1} / {game.total}</span>{seconds !== null && game.kind !== 'potato' && <span className="tag timer" role="timer"><ClockIcon size={14} aria-hidden /> {seconds}s</span>}</div></div>
     <details className="game-help"><summary><QuestionIcon size={17} aria-hidden /> How to play</summary><p>{metadata.instructions}</p></details>
     {active && <ActiveGame key={view.sessionId} game={game} view={view} send={send} disabled={disabled} now={now} />}

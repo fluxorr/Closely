@@ -39,6 +39,12 @@ export const questionBank: QuestionBank = {
         order by mature, position
       `);
     }
+    if (avoid.length) return queryRows<GameRow>(sql`
+      select id, text, answer_terms as "answerTerms"
+      from ${questions} where kind = ${kind} and enabled
+      order by (${JSON.stringify(avoid)}::jsonb ? id::text), id < ${pivot}, id
+      limit ${limit}
+    `);
     return queryRows<GameRow>(sql`
       select id, text, answer_terms as "answerTerms"
       from (

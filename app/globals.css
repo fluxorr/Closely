@@ -474,3 +474,14 @@ svg { flex-shrink: 0; }
   .room-header .room-hub-button, .room-header .room-chat-button { min-width:44px; min-height:44px; }
   .room-header .room-hub-button span, .room-header .room-chat-button span { display:none; }
 }
+
+.game-stage[data-arcade] { --arcade-paper:#f7e4d2; --arcade-accent:#864835; }
+.game-stage[data-arcade="same"] { --arcade-paper:#e3ebd6; --arcade-accent:#526b39; }
+.game-stage[data-arcade="bluff"] { --arcade-paper:#f4dce5; --arcade-accent:#87344e; }
+.game-stage[data-arcade="draw"] { --arcade-paper:#dcebe9; --arcade-accent:#416f69; }
+.game-stage[data-arcade] > .room-title { padding-bottom:12px; border-bottom:2px dashed color-mix(in srgb,var(--arcade-accent) 55%, transparent); }
+.game-stage[data-arcade] .timer { color:var(--arcade-accent); background:var(--arcade-paper); }
+.game-stage[data-arcade] > .countdown, .game-stage[data-arcade] > .round-reveal { background:var(--arcade-paper); border-color:color-mix(in srgb,var(--arcade-accent) 45%, transparent); box-shadow:0 4px 0 color-mix(in srgb,var(--arcade-accent) 28%, transparent); }
+.game-stage[data-arcade] > .round-reveal h2 { color:var(--arcade-accent); }
+@media (min-width:621px) { .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (min-width:1120px) { .game-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }

@@ -173,7 +173,7 @@ export async function applyRoomAction(s: RoomState, seat: Seat, action: RoomActi
       return true;
     case 'play-again': {
       if (s.match?.phase !== 'results') return false;
-      const avoid = s.match.kind === 'never' ? s.match.questions?.map(question => question.id) : undefined;
+      const avoid = s.match.questions?.map(question => question.id);
       const match = await startMatch(s.match.kind, `${roomId}:${key}`, key, bank, 'rematch', avoid);
       if (!match) return 'missing-questions';
       s.match = match;
