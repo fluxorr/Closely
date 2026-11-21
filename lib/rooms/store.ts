@@ -10,7 +10,33 @@ import { tickMatch, type Seat } from './game';
 import { applyRoomAction, legacyId, makeRoom, resetLegacyActivity, roomView, sessionId } from './state';
 
 type Row = typeof rooms.$inferSelect;
+type ActionEnvelope = z.infer<typeof envelope>;
+const snapshots = new Map<string, { row: Row; observedAt: number }>();
+const snapshotLimit = 32;
+const snapshotLifetime = 15000;
 const participant = (data: z.infer<typeof entry>, guest: string, now: number) => ({ name: data.name, avatar: data.avatar, credential: hash(guest), joinedAt: now });
+
+function remember(row: Row, observedAt: number) {
+  const previous = snapshots.get(row.id);
+  if (previous && previous.observedAt + snapshotLifetime > observedAt && previous.row.version > row.version) return row;
+  snapshots.delete(row.id);
+  snapshots.set(row.id, { row: structuredClone(row), observedAt });
+  if (snapshots.size > snapshotLimit) {
+    const oldest = snapshots.keys().next().value;
+    if (oldest !== undefined) snapshots.delete(oldest);
+  }
+  return row;
+}
+
+function recentRoom(id: string, version: number, now: number) {
+  const entry = snapshots.get(id);
+  if (!entry) return;
+  if (entry.observedAt + snapshotLifetime <= now || entry.row.expires <= now) {
+    snapshots.delete(id);
+    return;
+  }
+  if (entry.row.version === version) return structuredClone(entry.row);
+}
 
 export function seatOf(row: Row, guest: string | null): Seat | null {
   if (!guest) return null;
@@ -58,7 +84,7 @@ export async function createRoom(data: z.infer<typeof entry>, guest: string, rat
     from quota where hits <= 20
     returning id
   `);
-  return created ? view(room, 0, now) : null;
+  return created ? view(remember(room, now), 0, now) : null;
 }
 
 // The version guard lets concurrent requests read without a lock. Only the winning
@@ -71,7 +97,10 @@ async function save(row: Row, now: number, seat: Seat, receipt?: { id: string; h
       set state = ${JSON.stringify(row.state)}::jsonb,
           version = version + 1,
           ${seen} = greatest(${seen}, ${now})
-      where id = ${row.id} and version = ${row.version} and expires_at > ${now}
+      where id = ${row.id} and version = ${row.version} and expires_at = ${row.expires} and expires_at > ${now}
+      ${receipt ? sql`and not exists (
+        select 1 from ${receipts} where room_id = ${row.id} and seat = ${seat} and id = ${receipt.id}
+      )` : sql.empty()}
       returning id, version, seen_0, seen_1
     ), queued as (
       insert into ${outbox} (room_id, version, created_at)
@@ -83,7 +112,7 @@ async function save(row: Row, now: number, seat: Seat, receipt?: { id: string; h
     )` : sql.empty()}
     select version, seen_0::double precision as "seen0", seen_1::double precision as "seen1" from updated
   `);
-  return updated ? { ...row, ...updated } : null;
+  return updated ? remember({ ...row, ...updated }, now) : null;
 }
 
 export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKey: string) {
@@ -91,18 +120,45 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKe
   const id = data.id;
   const invitation = hash(data.invite ?? '');
   const condition = id ? eq(rooms.id, id) : eq(rooms.inviteHash, invitation);
-  const [initial] = await queryRows<{ allowed: boolean; room: Row | null }>(sql`
-    with quota as (${meter(rateKey, now)})
-    select hits <= 35 as allowed, (
+  const player = participant(data, guest, now);
+  const validInvite = data.invite ? sql`room.invite_hash = ${invitation}` : sql`${Boolean(id && legacyId.test(id))}::boolean`;
+  const [initial] = await queryRows<{ allowed: boolean; changed: boolean; room: Row | null }>(sql`
+    with quota as (${meter(rateKey, now)}), candidate as (
+      select ${rooms}.* from ${rooms} cross join quota
+      where ${condition} and quota.hits <= 35
+      for update of ${rooms}
+    ), joined as (
+      update ${rooms} as room
+      set state = jsonb_set(room.state, '{players,1}', ${JSON.stringify(player)}::jsonb),
+          version = room.version + 1,
+          seen_1 = greatest(room.seen_1, ${now})
+      from candidate
+      where room.id = candidate.id and room.expires_at > ${now} and ${validInvite}
+        and room.state->'players'->1 = 'null'::jsonb
+        and room.state->'players'->0->>'credential' <> ${player.credential}
+      returning room.*
+    ), queued as (
+      insert into ${outbox} (room_id, version, created_at)
+      select id, version, ${now} from joined
+    )
+    select hits <= 35 as allowed, exists (select 1 from joined) as changed, (
       select jsonb_build_object(
         'id', id, 'inviteHash', invite_hash, 'version', version, 'state', state,
         'expires', expires_at, 'seen0', seen_0, 'seen1', seen_1
       )
-      from ${rooms} where ${condition} and quota.hits <= 35
+      from (
+        select * from joined
+        union all
+        select * from candidate where not exists (select 1 from joined)
+      ) as resolved
     ) as room from quota
   `);
   if (!initial.allowed) return { status: 429 } as const;
   let row = initial.room ?? undefined;
+  if (row && initial.changed) {
+    const joinedAt = Date.now();
+    return { status: 200, view: view(remember(row, joinedAt), 1, joinedAt), changed: true } as const;
+  }
   if (!row && id && legacyId.test(id) && !data.invite) {
     const [created] = await database().insert(rooms).values({
       id, inviteHash: hash(inviteFor(id)), state: makeRoom(participant(data, guest, now)), expires: now + roomLifetime, seen0: now,
@@ -116,7 +172,7 @@ export async function joinRoom(data: z.infer<typeof join>, guest: string, rateKe
     const seat = seatOf(row, guest);
     if (seat !== null) {
       if (row.expires <= currentTime) return { status: 410 } as const;
-      if (!advanceRoom(row, currentTime)) return { status: 200, view: view(row, seat, currentTime), changed: false } as const;
+      if (!advanceRoom(row, currentTime)) return { status: 200, view: view(remember(row, currentTime), seat, currentTime), changed: false } as const;
       const updated = await save(row, currentTime, seat);
       if (updated) return { status: 200, view: view(updated, seat, currentTime), changed: true } as const;
       row = await lookup(row.id);
@@ -154,7 +210,7 @@ export async function readRoom(id: string, guest: string | null) {
       continue;
     }
     const heartbeat = (seat === 0 ? row.seen0 : row.seen1) < now - 4500;
-    return { status: 200, view: view(row, seat, now), changed: false, heartbeat } as const;
+    return { status: 200, view: view(remember(row, now), seat, now), changed: false, heartbeat } as const;
   }
   return { status: 503 } as const;
 }
@@ -171,12 +227,40 @@ async function readAction(id: string, credential: string, actionId: string) {
   return result;
 }
 
-export async function mutateRoom(id: string, guest: string | null, message: z.infer<typeof envelope>) {
+async function applyAction(row: Row, seat: Seat, message: ActionEnvelope, now: number) {
+  const { action, actionId, expectedVersion } = message;
+  const independent = action.type === 'chat' || action.type === 'reaction';
+  if (!independent && (row.version !== expectedVersion || message.sessionId !== sessionId(row.state))) {
+    return { status: 409, error: 'The room moved on. Try again.' } as const;
+  }
+  const minGap = action.type === 'stroke' ? 110 : action.type === 'reaction' ? 400 : action.type === 'chat' || action.type === 'drawing-guess' ? 650 : 0;
+  if (row.state.lastActions[seat][action.type] > now - minGap) return { status: 429, error: 'Give it a moment and try again.' } as const;
+  const applied = await applyRoomAction(row.state, seat, action, row.id, actionId, now, questionBank);
+  if (applied !== true) {
+    const error = applied === 'missing-questions' ? 'This game has no published prompts yet.' : 'That action isn’t available right now.';
+    return { status: 422, error } as const;
+  }
+  row.state.lastActions[seat][action.type] = now;
+}
+
+export async function mutateRoom(id: string, guest: string | null, message: ActionEnvelope) {
   if (!guest) return { status: 401 } as const;
   const { action, actionId, expectedVersion } = message;
   const credential = hash(guest);
   const requestHash = hash(JSON.stringify([message.sessionId, action]));
-  const independent = action.type === 'chat' || action.type === 'reaction';
+  const receipt = { id: actionId, hash: requestHash };
+  const started = Date.now();
+  const recent = recentRoom(id, expectedVersion, started);
+  const recentSeat = recent ? seatOf(recent, guest) : null;
+  // Try the action against a recent committed snapshot. Only Postgres can confirm
+  // the version and receipt, and every rejected attempt goes through a fresh read.
+  if (recent && recentSeat !== null && !advanceRoom(recent, started)) {
+    const problem = await applyAction(recent, recentSeat, message, started);
+    if (!problem) {
+      const updated = await save(recent, started, recentSeat, receipt);
+      if (updated) return { status: 200, view: view(updated, recentSeat, started), changed: true } as const;
+    }
+  }
   for (let attempt = 0; attempt < 3; attempt++) {
     const snapshot = await readAction(id, credential, actionId);
     const seat = snapshot ? seatOf(snapshot.row, guest) : null;
@@ -195,18 +279,9 @@ export async function mutateRoom(id: string, guest: string | null, message: z.in
       if (!updated) continue;
       return { status: 409, error: transition === 'legacy' ? 'The room was updated. Choose an activity again.' : 'The timer moved on.', view: view(updated, seat, now), changed: true } as const;
     }
-    if (!independent && (row.version !== expectedVersion || message.sessionId !== sessionId(row.state))) {
-      return { status: 409, error: 'The room moved on. Try again.', view: view(row, seat, now) } as const;
-    }
-    const minGap = action.type === 'stroke' ? 110 : action.type === 'reaction' ? 400 : action.type === 'chat' || action.type === 'drawing-guess' ? 650 : 0;
-    if (row.state.lastActions[seat][action.type] > now - minGap) return { status: 429, error: 'Give it a moment and try again.', view: view(row, seat, now) } as const;
-    const applied = await applyRoomAction(row.state, seat, action, id, actionId, now, questionBank);
-    if (applied !== true) {
-      const error = applied === 'missing-questions' ? 'This game has no published prompts yet.' : 'That action isn’t available right now.';
-      return { status: 422, error, view: view(row, seat, now) } as const;
-    }
-    row.state.lastActions[seat][action.type] = now;
-    const updated = await save(row, now, seat, { id: actionId, hash: requestHash });
+    const problem = await applyAction(row, seat, message, now);
+    if (problem) return { ...problem, view: view(row, seat, now) };
+    const updated = await save(row, now, seat, receipt);
     if (updated) return { status: 200, view: view(updated, seat, now), changed: true } as const;
   }
   return { status: 503 } as const;

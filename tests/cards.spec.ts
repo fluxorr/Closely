@@ -29,6 +29,9 @@ test('two seats, synchronized cards, consent, private answers, chat and reconnec
     const next = await snapshot(a,id);
     expect(next.card?.round).toBe((open.card?.round ?? 0) + 1);
     expect(next.card?.cardId).not.toBe(open.card?.cardId);
+    const reused = await action(receiver,id,{ type:'flip' },next,receipt);
+    expect(reused.status()).toBe(409);
+    expect(await reused.json()).toMatchObject({ error: 'This action was already used.', view: { card: { phase: 'concealed', text: null } } });
     await b.page.reload();
     await expect(b.page.getByRole('button', { name:'Flip card' })).toBeVisible();
     expect((await snapshot(b,id)).card?.cardId).toBe(next.card?.cardId);
