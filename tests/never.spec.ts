@@ -24,7 +24,7 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
     await a.page.getByLabel('Sound settings').click();
     const effects = a.page.getByRole('checkbox', { name: 'Sound effects' });
     await expect(effects).not.toBeChecked();
-    const audio = a.page.waitForResponse(response => response.url().endsWith('/assets/audio/confirmation-003.mp3'), { timeout: 7000 });
+    const audio = a.page.waitForResponse(response => response.url().endsWith('/assets/audio/paper-reveal.mp3'), { timeout: 7000 });
     await effects.check();
     expect((await audio).ok()).toBe(true);
     await expect(a.page.getByRole('slider', { name: 'Volume' })).toBeEnabled();
@@ -62,8 +62,8 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
 
     await b.page.getByRole('button', { name: 'Neverrr' }).click();
     for (const player of [a, b]) {
-      await expect(player.page.getByText('Someone has a story.')).toBeVisible();
-      const choices = player.page.getByRole('group', { name: 'Both choices' });
+      await expect(player.page.getByText('We don’t match.')).toBeVisible();
+      const choices = player.page.getByRole('group', { name: 'Choice stamps' });
       await expect(choices).toContainText('Jo');
       await expect(choices).toContainText('Sam');
       await expect(choices).toContainText('I have');
@@ -74,13 +74,22 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
 
     for (const player of [a, b]) await player.page.getByRole('button', { name: 'Next prompt' }).click();
     await expect(b.page.getByText('After Hours', { exact: true })).toBeVisible();
+    await a.page.emulateMedia({ reducedMotion: 'no-preference' });
+    for (const player of [a, b]) await player.page.getByRole('button', { name: 'Neverrr' }).click();
+    await expect(a.page.getByText('We match!')).toBeVisible();
+    const mascot = a.page.locator('.never-characters img');
+    await expect(mascot).toHaveCSS('animation-name', 'never-hop');
+    await a.page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(mascot).toHaveCSS('animation-name', 'none');
+    await capture(a.page, 'match-1440');
+    for (const player of [a, b]) await player.page.getByRole('button', { name: 'Next prompt' }).click();
     await a.page.getByRole('button', { name: 'Neverrr' }).click();
     await b.page.getByRole('button', { name: 'Pass this prompt' }).click();
     await expect(a.page.getByText('Any sealed picks stay private.')).toBeVisible();
     expect((await snapshot(b, id)).game?.answers).toEqual([null, null]);
 
     const total = (await snapshot(a, id)).game!.total;
-    for (let round = 2; round < total; round++) {
+    for (let round = 3; round < total; round++) {
       expect((await action(a, id, { type: 'ready' })).ok()).toBe(true);
       expect((await action(b, id, { type: 'ready' })).ok()).toBe(true);
       expect((await action(a, id, { type: 'never-pass' })).ok()).toBe(true);
@@ -88,7 +97,7 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
     expect((await action(a, id, { type: 'ready' })).ok()).toBe(true);
     expect((await action(b, id, { type: 'ready' })).ok()).toBe(true);
     await expect(a.page.getByText('That stays between us.')).toBeVisible();
-    await expect(a.page.getByText(`1 of ${total} prompts answered together.`)).toBeVisible();
+    await expect(a.page.getByText(`2 of ${total} prompts answered together.`)).toBeVisible();
     await capture(a.page, 'results-1440');
 
     await a.page.getByRole('button', { name: 'Play again' }).click();

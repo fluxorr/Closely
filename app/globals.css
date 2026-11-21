@@ -310,10 +310,11 @@ svg { flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) { .reaction-float { animation: none !important; } }
 
 .never-stage {
-  --never-felt: #283629;
-  --never-paper: #fcf3df;
-  --never-accent: #9e4630;
-  --never-light: #f5eddb;
+  --never-felt: #2e3525;
+  --never-paper: #fff4d7;
+  --never-accent: #a33d27;
+  --never-gold: #ffd17a;
+  --never-line: #543522;
 }
 .never-heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 28px; }
 .never-heading h1 { font-size: clamp(2.65rem, 6vw, 5rem); }
@@ -323,7 +324,7 @@ svg { flex-shrink: 0; }
 .never-track [data-state="current"] { background: var(--never-accent); }
 .never-track [data-state="done"] { background: var(--never-felt); }
 
-.never-welcome { display: grid; grid-template-columns: 1fr .9fr; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-frame); background: var(--never-paper); }
+.never-welcome { display: grid; grid-template-columns: 1fr .9fr; overflow: hidden; border: 2px solid var(--never-line); border-radius: var(--r-frame); background: var(--never-paper); box-shadow: 0 5px 0 #d4a666; }
 .never-welcome figure { position: relative; min-height: 326px; background: var(--never-felt); }
 .never-welcome figure img { object-fit: cover; }
 .never-intro { display: grid; align-content: center; justify-items: start; gap: 16px; padding: clamp(22px, 5vw, 60px); }
@@ -334,28 +335,69 @@ svg { flex-shrink: 0; }
 .never-option strong, .never-option small { display: block; }
 .never-option small { color: var(--muted); }
 
-.never-table { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, .8fr); align-items: stretch; gap: clamp(14px, 3vw, 36px); padding: clamp(15px, 3vw, 34px); border: 1px solid #212e22; border-radius: var(--r-frame); background: var(--never-felt); }
-.never-prompt { min-width: 0; min-height: 275px; display: grid; align-content: center; justify-items: start; gap: 12px; position: relative; padding: clamp(21px, 5vw, 54px); background: var(--never-paper); border: 1px solid #d9c5a2; border-radius: var(--r-card) 7px var(--r-card) 7px; box-shadow: 0 3px 0 #c8b18e; }
-.never-prompt > p { color: #74543a; font-weight: 690; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
-.never-prompt h2 { font-size: clamp(1.9rem, 4vw, 3.5rem); line-height: 1.075; overflow-wrap: anywhere; }
-.never-mature { border: 1px solid #b88766; padding: 2px 8px; border-radius: 999px; font-size: .74rem; }
-.never-ballot { display: grid; align-content: center; gap: 15px; min-width: 0; color: var(--never-light); }
-.never-status p:first-child { display: flex; align-items: center; gap: 8px; font-weight: 670; }
-.never-status p:last-child, .never-reveal > p { color: #d5dacd; font-size: .9rem; overflow-wrap: anywhere; }
-.never-picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-.never-picks button, .never-slip { display: grid; justify-items: center; align-content: center; text-align: center; gap: 6px; min-height: 88px; padding: 10px 6px; border: 1px solid #e6c5b1; border-radius: 13px 6px 13px 6px; background: #f3d8c7; color: #712d20; font-weight: 750; }
-.never-picks button:nth-child(2), .never-slip[data-choice="never"] { background: #e1e9d4; border-color: #c2d2bc; color: #2b442e; }
-.never-picks button:not(:disabled):hover { box-shadow: inset 0 0 0 2px currentColor; }
+.never-table {
+  display: grid; grid-template-columns: minmax(0, 1.16fr) minmax(282px, .84fr); align-items: stretch;
+  gap: clamp(14px, 2.6vw, 30px); padding: clamp(13px, 3vw, 34px); border: 2px solid var(--never-line); border-radius: var(--r-frame);
+  background: repeating-conic-gradient(from 45deg, #e99a4840 0 25%, transparent 0 50%) 50% 50% / 62px 62px, var(--never-gold);
+  box-shadow: 0 6px 0 #be7437;
+}
+.never-prompt {
+  display: grid; align-content: center; justify-items: start; gap: 12px; min-width: 0; min-height: 314px;
+  padding: clamp(22px, 4.2vw, 52px); color: #312219; background: var(--never-paper); border: 2px solid var(--never-line);
+  border-radius: var(--r-card) 7px var(--r-card) 7px; box-shadow: 0 5px 0 #d58442;
+  animation: never-deal 270ms cubic-bezier(.22,1,.36,1) both;
+}
+.never-prompt > p { color: #6b4328; font-weight: 740; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.never-prompt h2 { font-size: clamp(1.95rem, 4vw, 3.65rem); line-height: 1.075; overflow-wrap: anywhere; }
+.never-mature { padding: 2px 9px; border: 1px solid #ba7150; border-radius: 999px; color: #762f23; font-size: .74rem; }
+
+.never-ballot {
+  display: grid; align-content: center; gap: 12px; min-width: 0; position: relative; padding: clamp(14px, 2.1vw, 25px);
+  color: var(--never-paper); background: var(--never-felt); border: 2px solid var(--never-line); border-radius: 18px;
+}
+.never-characters { align-self: end; justify-self: center; width: clamp(125px, 17vw, 203px); margin: -4px auto 0; }
+.never-characters img { display: block; width: 100%; height: auto; transform-origin: center bottom; }
+.never-table[data-outcome="match"] .never-characters img { animation: never-hop 460ms cubic-bezier(.22,1,.36,1); }
+.never-status p:first-child { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.never-status p:last-child, .never-reveal > p { color: #e1e2d3; font-size: .9rem; overflow-wrap: anywhere; }
+.never-picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.never-picks button {
+  display: grid; justify-items: center; align-content: center; text-align: center; gap: 3px; min-height: 73px; padding: 7px 5px;
+  border: 1px solid #9c4d39; border-radius: 12px 6px 12px 6px; background: #f49979; color: #4d2015;
+  box-shadow: 0 3px 0 #a8583e; font-weight: 790; transition: transform 130ms ease, box-shadow 130ms ease;
+}
+.never-picks button:nth-child(2) { background: #d1e3ac; border-color: #718852; color: #2b3f25; box-shadow: 0 3px 0 #79975a; }
+.never-picks button:not(:disabled):hover { transform: translateY(-2px); }
+.never-picks button:not(:disabled):active { transform: translateY(3px); box-shadow: none; }
 .never-picks button[aria-pressed="true"] { opacity: 1; box-shadow: inset 0 0 0 2px currentColor; }
 .never-table :focus-visible { outline-color: #f6d59d; }
-.never-pass { min-height: 44px; justify-self: start; color: var(--never-light); text-decoration: underline; text-underline-offset: 4px; font-size: .89rem; }
-.never-reveal { display: grid; gap: 14px; min-width: 0; }
-.never-reveal h3 { font-family: var(--serif); font-size: clamp(1.4rem, 2.5vw, 2.1rem); font-weight: 560; }
-.never-slip { min-height: 108px; gap: 4px; animation: never-reveal 340ms cubic-bezier(.2,.65,.3,1) both; }
-.never-slip span { font-size: .82rem; overflow-wrap: anywhere; max-width: 100%; font-weight: 590; }
-.never-continue { justify-self: start; background: var(--never-light); color: var(--never-felt); }
-.never-continue:hover:not(:disabled) { background: #fff9eb; }
-@keyframes never-reveal { from { opacity: .45; transform: translateY(9px) rotateX(12deg); } to { opacity: 1; transform: none; } }
+.never-pass { min-height: 44px; justify-self: start; color: var(--never-paper); text-decoration: underline; text-underline-offset: 4px; font-size: .89rem; }
+
+.never-reveal { display: grid; gap: 9px; min-width: 0; }
+.never-reveal h3 { font-family: var(--serif); font-size: clamp(2.15rem, 4vw, 3.25rem); font-weight: 660; line-height: 1.04; letter-spacing: -.04em; }
+.never-table[data-outcome="match"] .never-reveal h3 { color: #ffde8d; }
+.never-reveal-foot { display: grid; justify-items: start; gap: 16px; }
+.never-continue { background: var(--never-paper); color: var(--never-felt); }
+.never-continue:hover:not(:disabled) { background: #fffdf6; }
+.never-stamps { display: flex; justify-self: end; gap: 8px; max-width: 100%; padding: 3px 1px 1px; }
+.never-stamp {
+  --stamp-tilt: -5deg;
+  display: grid; align-content: center; gap: 1px; min-width: 0; max-width: 110px; padding: 5px 8px; text-align: center;
+  color: #ffdc9c; border: 1px dashed currentColor; border-radius: 4px; transform: rotate(var(--stamp-tilt)); font-size: .72rem;
+  animation: never-stamp 260ms cubic-bezier(.22,1,.36,1) both;
+}
+.never-stamp:nth-child(2) { --stamp-tilt: 5deg; color: #d0e2b0; animation-delay: 65ms; }
+.never-stamp span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.never-stamp strong { white-space: nowrap; }
+@keyframes never-deal { from { transform: translate(-8px, 5px) rotate(-1.5deg); opacity: .78; } }
+@keyframes never-stamp {
+  from { transform: translateY(-6px) scale(1.15) rotate(var(--stamp-tilt)); opacity: .45; }
+  to { transform: rotate(var(--stamp-tilt)); opacity: 1; }
+}
+@keyframes never-hop {
+  35% { transform: translateY(-9px) rotate(-4deg) scale(1.035); }
+  70% { transform: translateY(1px) rotate(1deg); }
+}
 
 .sound-control { position: relative; flex: none; }
 .sound-control > summary { list-style: none; cursor: pointer; }
@@ -372,10 +414,13 @@ svg { flex-shrink: 0; }
   .never-welcome figure { aspect-ratio: 1.8; min-height: 0; }
   .never-intro { gap: 13px; }
   .never-table { gap: 17px; }
-  .never-prompt { min-height: 182px; }
+  .never-prompt { min-height: 184px; }
   .never-ballot { gap: 9px; }
-  .never-picks button { min-height: 66px; gap: 3px; }
-  .never-slip { min-height: 94px; }
+  .never-characters { width: 126px; }
+  .never-picks button { min-height: 62px; }
+  .never-reveal-foot { grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+  .never-reveal-foot .never-continue { padding-inline: 9px; font-size: .85rem; }
+  .never-stamp { max-width: 75px; }
 }
 @media (max-width: 430px) {
   .room-header .actions { gap: 5px; }
@@ -385,5 +430,6 @@ svg { flex-shrink: 0; }
   .site-header .actions > .button { padding-inline: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .never-slip { animation: none; }
+  .never-prompt, .never-stamp, .never-table[data-outcome="match"] .never-characters img { animation: none; }
+  .never-picks button { transition: none; }
 }

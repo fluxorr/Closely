@@ -32,6 +32,7 @@ export default function NeverStage({ view, send, disabled }: { view: RoomView; s
   const locked = game.ready[view.seat];
   const canAct = !disabled && !view.proposal;
   const passed = revealed && !game.answers?.some(Boolean);
+  const matched = revealed && !passed && game.answers?.[0] === game.answers?.[1];
   const waiting = !partner?.online
     ? `${partnerName} is away. You can pick up here when they’re back.`
     : ownChoice ? `Waiting for ${partnerName} to choose…`
@@ -70,15 +71,18 @@ export default function NeverStage({ view, send, disabled }: { view: RoomView; s
       </div>
     </div>}
 
-    {(playing || revealed) && <div className="never-table">
+    {(playing || revealed) && <div className="never-table" data-outcome={revealed ? passed ? 'pass' : matched ? 'match' : 'split' : undefined}>
       <div className="never-prompt" key={view.sessionId}>
         <p>Never have I ever… {game.never?.mature && <span className="never-mature">After Hours</span>}</p>
         <h2>{game.prompt}</h2>
       </div>
       <div className="never-ballot">
+        <div className="never-characters">
+          <Image src="/assets/games/never-characters.webp" width={520} height={390} alt="" unoptimized />
+        </div>
         {playing ? <>
           <div className="never-status" role="status">
-            <p><LockKeyIcon size={16} aria-hidden /> {ownChoice ? `Your pick is sealed · ${label(ownChoice)}` : 'Your pick stays private'}</p>
+            <p><LockKeyIcon size={16} aria-hidden /> {ownChoice ? 'Your pick is sealed' : 'Your pick stays private'}</p>
             <p>{waiting}</p>
           </div>
           <div className="never-picks" role="group" aria-label="Your choice">
@@ -87,15 +91,17 @@ export default function NeverStage({ view, send, disabled }: { view: RoomView; s
           </div>
           <button className="never-pass" disabled={!canAct} onClick={() => void send({ type: 'never-pass' })}>Pass this prompt</button>
         </> : <div className="never-reveal" key={`${view.sessionId}:reveal`}>
-          <h3 role="status">{game.notice}</h3>
-          {passed ? <p>Any sealed picks stay private.</p> : <div className="never-picks" aria-label="Both choices" role="group">
-            {game.answers?.map((choice, seat) => <div className="never-slip" data-choice={choice} key={seat}>
-              {choice === 'have' ? <CheckIcon size={24} aria-hidden /> : <CircleIcon size={22} aria-hidden />}
-              <strong>{label(choice)}</strong>
-              <span>{view.players[seat]?.name}</span>
-            </div>)}
-          </div>}
-          <button className="button never-continue" disabled={!canAct || locked} onClick={() => void send({ type: 'ready' })}>{locked ? `Waiting for ${partnerName}…` : game.round + 1 === game.total ? 'See results' : 'Next prompt'} <ArrowRightIcon size={16} aria-hidden /></button>
+          <h3 role="status">{passed ? 'Prompt passed.' : matched ? 'We match!' : 'We don’t match.'}</h3>
+          {passed && <p>Any sealed picks stay private.</p>}
+          <div className="never-reveal-foot">
+            <button className="button never-continue" disabled={!canAct || locked} onClick={() => void send({ type: 'ready' })}>{locked ? `Waiting for ${partnerName}…` : game.round + 1 === game.total ? 'See results' : 'Next prompt'} <ArrowRightIcon size={16} aria-hidden /></button>
+            {!passed && <div className="never-stamps" aria-label="Choice stamps" role="group">
+              {game.answers?.map((choice, seat) => <div className="never-stamp" key={seat}>
+                <span>{view.players[seat]?.name}</span>
+                <strong>{label(choice)}</strong>
+              </div>)}
+            </div>}
+          </div>
         </div>}
       </div>
     </div>}

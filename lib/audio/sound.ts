@@ -1,14 +1,14 @@
 const cues = {
-  card: 'book-flip-3',
-  sealed: 'select-007',
-  reveal: 'confirmation-003',
-  finish: 'success-chime',
-  notice: 'notification-pop',
+  card: 'paper-slide',
+  sealed: 'felt-stamp',
+  reveal: 'paper-reveal',
+  finish: 'round-done',
+  notice: 'soft-knock',
 } as const;
 export type SoundCue = keyof typeof cues;
 type SoundSettings = { enabled: boolean; volume: number };
 const settingsKey = 'closely:sound';
-const defaults: SoundSettings = { enabled: false, volume: 0.35 };
+const defaults: SoundSettings = { enabled: false, volume: 0.28 };
 const listeners = new Set<() => void>();
 let settings: SoundSettings | undefined;
 let context: AudioContext | undefined;

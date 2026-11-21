@@ -110,8 +110,8 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
       g.answers[seat] = action.choice;
       if (!g.answers.every(Boolean)) return true;
       g.revealedRounds = (g.revealedRounds ?? 0) + 1;
-      const have = g.answers.filter(answer => answer === 'have').length;
-      resolve(g, have === 2 ? 'You both have a story.' : have === 1 ? 'Someone has a story.' : 'A first for both of you.');
+      g.matched = g.answers[0] === g.answers[1];
+      resolve(g, g.matched ? 'We match!' : 'We don’t match.');
       return true;
     }
     case 'same': {
