@@ -118,16 +118,16 @@ test('Never Have I Ever has no clock, seals votes, and requires two After Hours 
   expect(await mutate(0, { type: 'never-answer', choice: 'never' })).toBe(false);
   expect(await mutate(1, { type: 'never-pass' })).toBe(true);
   expect(gameView(game, 0).answers).toEqual([null, null]);
-  await mutate(0, { type: 'ready' });
-  await mutate(1, { type: 'ready' });
+  expect(await mutate(0, { type: 'ready' })).toBe(false);
+  expect(tickMatch(game, 2999)).toBe(false);
+  expect(tickMatch(game, 3000)).toBe(true);
   expect(gameView(game, 1).never?.mature).toBe(false);
 
   await mutate(0, { type: 'never-answer', choice: 'have' });
   await mutate(1, { type: 'never-answer', choice: 'never' });
   expect(gameView(game, 0).answers).toEqual(['have', 'never']);
   expect(gameView(game, 1).answers).toEqual(['have', 'never']);
-  await mutate(0, { type: 'ready' });
-  await mutate(1, { type: 'ready' });
+  expect(tickMatch(game, 3000)).toBe(true);
   expect(gameView(game, 1)).toMatchObject({ phase: 'results', answers: null, never: { revealed: 1 } });
 
   expect(await mutate(0, { type: 'play-again' })).toBe(true);
@@ -138,7 +138,6 @@ test('Never Have I Ever has no clock, seals votes, and requires two After Hours 
   expect(gameView(rematch, 0).prompt).toBe(mild.text);
   await mutate(0, { type: 'never-answer', choice: 'never' });
   await mutate(1, { type: 'never-answer', choice: 'never' });
-  await mutate(0, { type: 'ready' });
-  await mutate(1, { type: 'ready' });
+  expect(tickMatch(rematch, 3000)).toBe(true);
   expect(gameView(rematch, 0)).toMatchObject({ phase: 'playing', prompt: bold.text, never: { mature: true } });
 });

@@ -376,9 +376,6 @@ svg { flex-shrink: 0; }
 .never-reveal { display: grid; gap: 9px; min-width: 0; }
 .never-reveal h3 { font-family: var(--serif); font-size: clamp(2.15rem, 4vw, 3.25rem); font-weight: 660; line-height: 1.04; letter-spacing: -.04em; }
 .never-table[data-outcome="match"] .never-reveal h3 { color: #ffde8d; }
-.never-reveal-foot { display: grid; justify-items: start; gap: 16px; }
-.never-continue { background: var(--never-paper); color: var(--never-felt); }
-.never-continue:hover:not(:disabled) { background: #fffdf6; }
 .never-stamps { display: flex; justify-self: end; gap: 8px; max-width: 100%; padding: 3px 1px 1px; }
 .never-stamp {
   --stamp-tilt: -5deg;
@@ -418,8 +415,6 @@ svg { flex-shrink: 0; }
   .never-ballot { gap: 9px; }
   .never-characters { width: 126px; }
   .never-picks button { min-height: 62px; }
-  .never-reveal-foot { grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
-  .never-reveal-foot .never-continue { padding-inline: 9px; font-size: .85rem; }
   .never-stamp { max-width: 75px; }
 }
 @media (max-width: 430px) {

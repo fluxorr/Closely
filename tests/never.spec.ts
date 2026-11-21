@@ -72,7 +72,7 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
     await capture(a.page, 'reveal-1440');
     await capture(b.page, 'reveal-390');
 
-    for (const player of [a, b]) await player.page.getByRole('button', { name: 'Next prompt' }).click();
+    await expect(a.page.getByRole('button', { name: 'I have', exact: true })).toBeEnabled();
     await expect(b.page.getByText('After Hours', { exact: true })).toBeVisible();
     await a.page.emulateMedia({ reducedMotion: 'no-preference' });
     for (const player of [a, b]) await player.page.getByRole('button', { name: 'Neverrr' }).click();
@@ -82,7 +82,7 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
     await a.page.emulateMedia({ reducedMotion: 'reduce' });
     await expect(mascot).toHaveCSS('animation-name', 'none');
     await capture(a.page, 'match-1440');
-    for (const player of [a, b]) await player.page.getByRole('button', { name: 'Next prompt' }).click();
+    await expect(a.page.getByRole('button', { name: 'I have', exact: true })).toBeEnabled();
     await a.page.getByRole('button', { name: 'Neverrr' }).click();
     await b.page.getByRole('button', { name: 'Pass this prompt' }).click();
     await expect(a.page.getByText('Any sealed picks stay private.')).toBeVisible();
@@ -90,12 +90,9 @@ test('two players seal, reveal, pass, reconnect, and finish an untimed game', as
 
     const total = (await snapshot(a, id)).game!.total;
     for (let round = 3; round < total; round++) {
-      expect((await action(a, id, { type: 'ready' })).ok()).toBe(true);
-      expect((await action(b, id, { type: 'ready' })).ok()).toBe(true);
+      await expect.poll(async () => (await snapshot(a, id)).game?.phase).toBe('playing');
       expect((await action(a, id, { type: 'never-pass' })).ok()).toBe(true);
     }
-    expect((await action(a, id, { type: 'ready' })).ok()).toBe(true);
-    expect((await action(b, id, { type: 'ready' })).ok()).toBe(true);
     await expect(a.page.getByText('That stays between us.')).toBeVisible();
     await expect(a.page.getByText(`2 of ${total} prompts answered together.`)).toBeVisible();
     await capture(a.page, 'results-1440');

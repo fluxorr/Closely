@@ -35,9 +35,11 @@ export function newMatch(kind: GameId, id: string, seed: number, phase: Phase = 
 const totalRounds = (g: Match) => g.questions?.length || roundLimits[g.kind];
 const guessWords = (text: string) => normalize(text).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/gu, ' ').trim();
 
-function resolve(g: Match, text: string) {
+const neverRevealMs = 3000;
+
+function resolve(g: Match, text: string, deadline: number | null = null) {
   g.phase = 'resolving';
-  g.deadline = null;
+  g.deadline = deadline;
   g.notice = text;
   g.ready = [false,false];
 }
@@ -46,7 +48,30 @@ function startRound(g: Match, now: number) {
   g.deadline = g.kind === 'never' ? null : now + (times[g.kind] + (g.kind === 'potato' ? g.seed % 8 : 0)) * 1000;
   g.passAt = now + 500;
 }
+function resetRound(g: Match) {
+  g.round++;
+  g.answers = [null, null];
+  g.story = null;
+  g.guess = null;
+  g.drawing = [];
+  g.misses = 0;
+  g.matched = false;
+  g.notice = '';
+}
+
 export function tickMatch(g: Match, now: number) {
+  if (g.kind === 'never' && g.phase === 'resolving') {
+    if (g.deadline !== null && now < g.deadline) return false;
+    if (g.round + 1 === totalRounds(g)) {
+      g.phase = 'results';
+      g.deadline = null;
+      g.answers = [null, null];
+    } else {
+      resetRound(g);
+      startRound(g, now);
+    }
+    return true;
+  }
   if (g.deadline === null || now < g.deadline) return false;
   if (g.phase === 'countdown') {
     startRound(g, g.deadline);
@@ -65,8 +90,8 @@ export function tickMatch(g: Match, now: number) {
 
 export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number): boolean {
   if (action.type === 'ready' && ['lobby','ready','rematch','resolving'].includes(g.phase)) {
-    if (g.ready[seat]) return false;
-    const choosingDeck = g.kind === 'never' && g.phase !== 'resolving';
+    if (g.ready[seat] || (g.kind === 'never' && g.phase === 'resolving')) return false;
+    const choosingDeck = g.kind === 'never';
     if (choosingDeck && g.afterHours) g.afterHours[seat] = action.afterHours === true;
     g.ready[seat] = true;
     if (g.phase === 'lobby') g.phase = 'ready';
@@ -76,14 +101,7 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
       return true;
     }
     if (g.phase === 'resolving') {
-      g.round++;
-      g.answers = [null,null];
-      g.story = null;
-      g.guess = null;
-      g.drawing = [];
-      g.misses = 0;
-      g.matched = false;
-      g.notice = '';
+      resetRound(g);
     }
     if (g.kind === 'never') {
       if (choosingDeck && g.afterHours?.every(Boolean)) {
@@ -103,7 +121,7 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
     case 'never': {
       if (action.type === 'never-pass') {
         g.answers = [null, null];
-        resolve(g, 'Prompt passed.');
+        resolve(g, 'Prompt passed.', now + neverRevealMs);
         return true;
       }
       if (action.type !== 'never-answer' || g.answers[seat] !== null) return false;
@@ -111,7 +129,7 @@ export function playMatch(g: Match, seat: Seat, action: RoomAction, now: number)
       if (!g.answers.every(Boolean)) return true;
       g.revealedRounds = (g.revealedRounds ?? 0) + 1;
       g.matched = g.answers[0] === g.answers[1];
-      resolve(g, g.matched ? 'We match!' : 'We don’t match.');
+      resolve(g, g.matched ? 'We match!' : 'We don’t match.', now + neverRevealMs);
       return true;
     }
     case 'same': {

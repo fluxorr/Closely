@@ -93,15 +93,12 @@ export default function NeverStage({ view, send, disabled }: { view: RoomView; s
         </> : <div className="never-reveal" key={`${view.sessionId}:reveal`}>
           <h3 role="status">{passed ? 'Prompt passed.' : matched ? 'We match!' : 'We don’t match.'}</h3>
           {passed && <p>Any sealed picks stay private.</p>}
-          <div className="never-reveal-foot">
-            <button className="button never-continue" disabled={!canAct || locked} onClick={() => void send({ type: 'ready' })}>{locked ? `Waiting for ${partnerName}…` : game.round + 1 === game.total ? 'See results' : 'Next prompt'} <ArrowRightIcon size={16} aria-hidden /></button>
             {!passed && <div className="never-stamps" aria-label="Choice stamps" role="group">
               {game.answers?.map((choice, seat) => <div className="never-stamp" key={seat}>
                 <span>{view.players[seat]?.name}</span>
                 <strong>{label(choice)}</strong>
               </div>)}
             </div>}
-          </div>
         </div>}
       </div>
     </div>}
